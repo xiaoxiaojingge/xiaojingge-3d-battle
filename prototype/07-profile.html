@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸鱼大乱斗 - 个人数据</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    body { min-height: 100vh; background: var(--bg-warm); }
+    .main { padding: 90px 20px 60px; max-width: 1100px; margin: 0 auto; }
+
+    /* Profile Header */
+    .profile-header {
+      display: flex; align-items: center; gap: 24px;
+      margin-bottom: 32px; flex-wrap: wrap;
+    }
+    .profile-avatar {
+      width: 88px; height: 88px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--pink));
+      border: 4px solid var(--yellow);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem; flex-shrink: 0;
+      box-shadow: var(--shadow-glow-primary);
+    }
+    .profile-info { flex: 1; }
+    .profile-name {
+      font-family: var(--font-display); font-size: 1.8rem; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .profile-rank {
+      padding: 3px 12px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--yellow), var(--primary));
+      color: white; font-size: 0.7rem; font-weight: 700;
+    }
+    .profile-meta {
+      font-size: 0.88rem; color: var(--text-mid); margin-top: 4px;
+      display: flex; gap: 16px; flex-wrap: wrap;
+    }
+    .profile-actions { display: flex; gap: 8px; }
+
+    /* Stats Overview */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 16px; margin-bottom: 32px;
+    }
+    .stat-card {
+      background: white; border-radius: var(--radius-lg);
+      padding: 20px; text-align: center;
+      box-shadow: var(--shadow-sm);
+      border: 2px solid transparent;
+      transition: all var(--transition-normal);
+    }
+    .stat-card:hover {
+      border-color: rgba(255,107,53,0.15); transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .stat-card-icon { font-size: 1.5rem; margin-bottom: 8px; }
+    .stat-card-val {
+      font-family: var(--font-display); font-size: 1.8rem; font-weight: 700;
+      color: var(--primary);
+    }
+    .stat-card-label { font-size: 0.78rem; color: var(--text-light); margin-top: 2px; }
+
+    /* Content Grid */
+    .content-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+
+    .section-card {
+      background: white; border-radius: var(--radius-xl);
+      padding: 24px; box-shadow: var(--shadow-sm);
+      border: 2px solid rgba(255,107,53,0.04);
+    }
+    .section-title {
+      font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 20px; display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .section-title-left { display: flex; align-items: center; gap: 8px; }
+
+    /* Win Rate Chart (CSS only) */
+    .winrate-chart {
+      display: flex; align-items: center; justify-content: center; gap: 32px;
+    }
+    .donut {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: conic-gradient(
+        var(--success) 0% 58%,
+        var(--red-team-light) 58% 100%
+      );
+      display: flex; align-items: center; justify-content: center;
+      position: relative;
+    }
+    .donut-inner {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: white; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .donut-val {
+      font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
+      color: var(--success);
+    }
+    .donut-label { font-size: 0.7rem; color: var(--text-light); }
+    .winrate-legend { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+    /* Recent Trend (bar chart) */
+    .trend-bars {
+      display: flex; align-items: flex-end; gap: 6px; height: 80px;
+      padding-top: 8px;
+    }
+    .trend-bar {
+      flex: 1; border-radius: 4px 4px 0 0;
+      min-height: 8px; transition: all var(--transition-normal);
+      cursor: pointer; position: relative;
+    }
+    .trend-bar.win { background: var(--success); }
+    .trend-bar.lose { background: var(--red-team-light); }
+    .trend-bar:hover { opacity: 0.8; transform: scaleY(1.05); transform-origin: bottom; }
+    .trend-labels {
+      display: flex; gap: 6px; margin-top: 6px;
+    }
+    .trend-label { flex: 1; text-align: center; font-size: 0.6rem; color: var(--text-light); }
+
+    /* Hero Usage */
+    .hero-usage-list { display: flex; flex-direction: column; gap: 12px; }
+    .hero-usage-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: var(--radius-md);
+      transition: background var(--transition-fast); cursor: pointer;
+    }
+    .hero-usage-item:hover { background: var(--bg-warm); }
+    .hero-usage-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+    }
+    .hero-usage-item:nth-child(1) .hero-usage-icon { background: rgba(255,107,53,0.1); border: 2px solid var(--primary); }
+    .hero-usage-item:nth-child(2) .hero-usage-icon { background: rgba(96,165,250,0.1); border: 2px solid var(--blue-team); }
+    .hero-usage-item:nth-child(3) .hero-usage-icon { background: rgba(255,143,171,0.1); border: 2px solid var(--pink); }
+    .hero-usage-item:nth-child(4) .hero-usage-icon { background: rgba(74,222,128,0.1); border: 2px solid var(--success); }
+    .hero-usage-item:nth-child(5) .hero-usage-icon { background: rgba(196,181,253,0.1); border: 2px solid var(--lavender); }
+    .hero-usage-info { flex: 1; }
+    .hero-usage-name { font-weight: 600; font-size: 0.9rem; }
+    .hero-usage-meta { font-size: 0.75rem; color: var(--text-light); }
+    .hero-usage-winrate {
+      font-family: var(--font-display); font-weight: 700; font-size: 0.9rem;
+    }
+
+    /* Match History */
+    .match-list { display: flex; flex-direction: column; gap: 10px; }
+    .match-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: var(--radius-md);
+      border-left: 4px solid;
+      background: var(--bg-cream);
+      transition: all var(--transition-fast); cursor: pointer;
+    }
+    .match-item:hover { background: var(--bg-warm); transform: translateX(4px); }
+    .match-item.win { border-left-color: var(--success); }
+    .match-item.lose { border-left-color: var(--red-team); }
+    .match-result {
+      font-family: var(--font-display); font-weight: 700; font-size: 0.85rem;
+      width: 32px; text-align: center;
+    }
+    .match-item.win .match-result { color: var(--success); }
+    .match-item.lose .match-result { color: var(--red-team); }
+    .match-hero-icon { font-size: 1.3rem; }
+    .match-info { flex: 1; }
+    .match-kda { font-weight: 600; font-size: 0.88rem; }
+    .match-meta { font-size: 0.72rem; color: var(--text-light); }
+    .match-time { font-size: 0.72rem; color: var(--text-light); text-align: right; }
+
+    /* Leaderboard */
+    .leaderboard-full { grid-column: 1 / -1; }
+    .leaderboard-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .lb-tab {
+      padding: 6px 16px; border-radius: var(--radius-full);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      background: var(--bg-warm); color: var(--text-mid);
+      transition: all var(--transition-fast);
+    }
+    .lb-tab.active { background: rgba(255,107,53,0.1); color: var(--primary); }
+    .lb-tab:hover { background: rgba(255,107,53,0.08); }
+
+    .lb-table { width: 100%; border-collapse: collapse; }
+    .lb-table th {
+      text-align: left; padding: 10px 12px; font-size: 0.72rem;
+      color: var(--text-light); font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.5px; border-bottom: 2px solid var(--bg-warm);
+    }
+    .lb-table td {
+      padding: 10px 12px; font-size: 0.88rem;
+      border-bottom: 1px solid rgba(0,0,0,0.04);
+    }
+    .lb-table tr:hover td { background: var(--bg-warm); }
+    .lb-rank {
+      font-family: var(--font-display); font-weight: 700; width: 36px;
+      text-align: center;
+    }
+    .lb-rank-1 { color: var(--yellow-dark); font-size: 1.1rem; }
+    .lb-rank-2 { color: var(--text-light); font-size: 1rem; }
+    .lb-rank-3 { color: #CD7F32; font-size: 1rem; }
+    .lb-player {
+      display: flex; align-items: center; gap: 8px; font-weight: 600;
+    }
+    .lb-player-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; background: var(--bg-warm);
+    }
+    .lb-me { background: rgba(255,217,61,0.06) !important; }
+    .lb-me td { font-weight: 700; }
+
+    @media (max-width: 768px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .leaderboard-full { grid-column: 1; }
+      .profile-header { text-align: center; flex-direction: column; }
+      .profile-meta { justify-content: center; }
+      .profile-actions { justify-content: center; }
+      .stats-row { grid-template-columns: repeat(3, 1fr); }
+      .winrate-chart { flex-direction: column; gap: 16px; }
+    }
+    @media (max-width: 480px) {
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="page-nav">
+    <a href="01-home.html" class="page-nav-logo"><span>🐡</span> 摸鱼大乱斗</a>
+    <div class="page-nav-links">
+      <a href="01-home.html">首页</a>
+      <a href="02-lobby.html">大厅</a>
+      <a href="#" class="active">数据</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- Profile Header -->
+    <div class="profile-header">
+      <div class="profile-avatar">🐱</div>
+      <div class="profile-info">
+        <div class="profile-name">
+          摸鱼达人
+          <span class="profile-rank">摸鱼王者</span>
+        </div>
+        <div class="profile-meta">
+          <span>Lv.23</span>
+          <span>总积分: 2,456</span>
+          <span>注册于 2026-01</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary btn-sm" onclick="location.href='02-lobby.html'">开始游戏</button>
+        <button class="btn btn-outline btn-sm">编辑资料</button>
+      </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-card-icon">🎮</div>
+        <div class="stat-card-val">67</div>
+        <div class="stat-card-label">总场次</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">🏆</div>
+        <div class="stat-card-val">39</div>
+        <div class="stat-card-label">胜场</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">📊</div>
+        <div class="stat-card-val">58%</div>
+        <div class="stat-card-label">胜率</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⚔️</div>
+        <div class="stat-card-val">342</div>
+        <div class="stat-card-label">总击杀</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">⭐</div>
+        <div class="stat-card-val">12</div>
+        <div class="stat-card-label">MVP次数</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-icon">🔥</div>
+        <div class="stat-card-val">3</div>
+        <div class="stat-card-label">当前连胜</div>
+      </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+
+      <!-- Win Rate -->
+      <div class="section-card">
+        <div class="section-title">
+          <div class="section-title-left">📈 胜率分析</div>
+        </div>
+        <div class="winrate-chart">
+          <div class="donut">
+            <div class="donut-inner">
+              <div class="donut-val">58%</div>
+              <div class="donut-label">胜率</div>
+            </div>
+          </div>
+          <div class="winrate-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--success)"></div>
+              <span>胜场: 39</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--red-team-light)"></div>
+              <span>负场: 28</span>
+            </div>
+            <div class="legend-item" style="margin-top:8px;font-size:0.78rem;color:var(--text-light)">
+              平均 KDA: 5.1/3.2/7.8
+            </div>
+            <div class="legend-item" style="font-size:0.78rem;color:var(--text-light)">
+              场均伤害: 14,523
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Trend -->
+      <div class="section-card">
+        <div class="section-title">
+          <div class="section-title-left">📊 近期趋势</div>
+          <span style="font-size:0.75rem;color:var(--text-light)">最近10场</span>
+        </div>
+        <div class="trend-bars">
+          <div class="trend-bar win" style="height:80%"></div>
+          <div class="trend-bar win" style="height:65%"></div>
+          <div class="trend-bar lose" style="height:40%"></div>
+          <div class="trend-bar win" style="height:90%"></div>
+          <div class="trend-bar lose" style="height:50%"></div>
+          <div class="trend-bar lose" style="height:30%"></div>
+          <div class="trend-bar win" style="height:75%"></div>
+          <div class="trend-bar win" style="height:100%"></div>
+          <div class="trend-bar win" style="height:85%"></div>
+          <div class="trend-bar win" style="height:70%"></div>
+        </div>
+        <div class="trend-labels">
+          <div class="trend-label">胜</div><div class="trend-label">胜</div>
+          <div class="trend-label">负</div><div class="trend-label">胜</div>
+          <div class="trend-label">负</div><div class="trend-label">负</div>
+          <div class="trend-label">胜</div><div class="trend-label">胜</div>
+          <div class="trend-label">胜</div><div class="trend-label">胜</div>
+        </div>
+        <div style="text-align:center;margin-top:12px;font-size:0.82rem;color:var(--success);font-weight:600">
+          近10场胜率: 70% · 当前 3 连胜 🔥
+        </div>
+      </div>
+
+      <!-- Hero Usage -->
+      <div class="section-card">
+        <div class="section-title">
+          <div class="section-title-left">🦸 常用英雄</div>
+        </div>
+        <div class="hero-usage-list">
+          <div class="hero-usage-item">
+            <div class="hero-usage-icon">🔮</div>
+            <div class="hero-usage-info">
+              <div class="hero-usage-name">星焰法师</div>
+              <div class="hero-usage-meta">18场 · KDA 6.2/2.8/5.4</div>
+            </div>
+            <div class="hero-usage-winrate" style="color:var(--success)">67%</div>
+          </div>
+          <div class="hero-usage-item">
+            <div class="hero-usage-icon">🏹</div>
+            <div class="hero-usage-info">
+              <div class="hero-usage-name">疾风射手</div>
+              <div class="hero-usage-meta">12场 · KDA 7.1/3.5/4.2</div>
+            </div>
+            <div class="hero-usage-winrate" style="color:var(--success)">58%</div>
+          </div>
+          <div class="hero-usage-item">
+            <div class="hero-usage-icon">⚔️</div>
+            <div class="hero-usage-info">
+              <div class="hero-usage-name">烈焰战士</div>
+              <div class="hero-usage-meta">10场 · KDA 8.3/5.1/3.8</div>
+            </div>
+            <div class="hero-usage-winrate" style="color:var(--primary)">50%</div>
+          </div>
+          <div class="hero-usage-item">
+            <div class="hero-usage-icon">💚</div>
+            <div class="hero-usage-info">
+              <div class="hero-usage-name">温柔治愈</div>
+              <div class="hero-usage-meta">8场 · KDA 1.2/2.4/14.6</div>
+            </div>
+            <div class="hero-usage-winrate" style="color:var(--success)">75%</div>
+          </div>
+          <div class="hero-usage-item">
+            <div class="hero-usage-icon">🛡️</div>
+            <div class="hero-usage-info">
+              <div class="hero-usage-name">铁壁守护</div>
+              <div class="hero-usage-meta">7场 · KDA 2.0/3.1/10.4</div>
+            </div>
+            <div class="hero-usage-winrate" style="color:var(--red-team)">43%</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Match History -->
+      <div class="section-card">
+        <div class="section-title">
+          <div class="section-title-left">📜 对局记录</div>
+          <span style="font-size:0.78rem;color:var(--primary);cursor:pointer">查看全部</span>
+        </div>
+        <div class="match-list">
+          <div class="match-item win">
+            <div class="match-result">胜</div>
+            <span class="match-hero-icon">🔮</span>
+            <div class="match-info">
+              <div class="match-kda">8/2/6 · MVP</div>
+              <div class="match-meta">星焰法师 · 蓝队</div>
+            </div>
+            <div class="match-time">09:47<br><span style="font-size:0.65rem">10分钟前</span></div>
+          </div>
+          <div class="match-item win">
+            <div class="match-result">胜</div>
+            <span class="match-hero-icon">🏹</span>
+            <div class="match-info">
+              <div class="match-kda">11/4/5</div>
+              <div class="match-meta">疾风射手 · 红队</div>
+            </div>
+            <div class="match-time">12:33<br><span style="font-size:0.65rem">1小时前</span></div>
+          </div>
+          <div class="match-item win">
+            <div class="match-result">胜</div>
+            <span class="match-hero-icon">⚔️</span>
+            <div class="match-info">
+              <div class="match-kda">6/5/9</div>
+              <div class="match-meta">烈焰战士 · 蓝队</div>
+            </div>
+            <div class="match-time">11:08<br><span style="font-size:0.65rem">2小时前</span></div>
+          </div>
+          <div class="match-item lose">
+            <div class="match-result">负</div>
+            <span class="match-hero-icon">💚</span>
+            <div class="match-info">
+              <div class="match-kda">0/4/12</div>
+              <div class="match-meta">温柔治愈 · 红队</div>
+            </div>
+            <div class="match-time">14:21<br><span style="font-size:0.65rem">3小时前</span></div>
+          </div>
+          <div class="match-item lose">
+            <div class="match-result">负</div>
+            <span class="match-hero-icon">🛡️</span>
+            <div class="match-info">
+              <div class="match-kda">2/7/8</div>
+              <div class="match-meta">铁壁守护 · 蓝队</div>
+            </div>
+            <div class="match-time">10:55<br><span style="font-size:0.65rem">昨天</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="section-card leaderboard-full">
+        <div class="section-title">
+          <div class="section-title-left">🏅 排行榜</div>
+        </div>
+        <div class="leaderboard-tabs">
+          <div class="lb-tab active">周榜</div>
+          <div class="lb-tab">总榜</div>
+          <div class="lb-tab">击杀榜</div>
+          <div class="lb-tab">MVP榜</div>
+        </div>
+        <table class="lb-table">
+          <thead>
+            <tr>
+              <th style="width:50px">排名</th>
+              <th>玩家</th>
+              <th>场次</th>
+              <th>胜率</th>
+              <th>KDA</th>
+              <th>积分</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="lb-rank lb-rank-1">🥇</td>
+              <td><div class="lb-player"><div class="lb-player-avatar">🦊</div>不想上班</div></td>
+              <td>89</td><td style="color:var(--success);font-weight:600">72%</td><td>6.8</td><td style="font-weight:700">3,245</td>
+            </tr>
+            <tr>
+              <td class="lb-rank lb-rank-2">🥈</td>
+              <td><div class="lb-player"><div class="lb-player-avatar">🐼</div>Bug制造机</div></td>
+              <td>76</td><td style="color:var(--success);font-weight:600">68%</td><td>5.9</td><td style="font-weight:700">2,876</td>
+            </tr>
+            <tr>
+              <td class="lb-rank lb-rank-3">🥉</td>
+              <td><div class="lb-player"><div class="lb-player-avatar">🐸</div>React大师</div></td>
+              <td>82</td><td style="color:var(--success);font-weight:600">63%</td><td>5.4</td><td style="font-weight:700">2,654</td>
+            </tr>
+            <tr class="lb-me">
+              <td class="lb-rank">4</td>
+              <td><div class="lb-player"><div class="lb-player-avatar">🐱</div><strong style="color:var(--primary)">摸鱼达人（你）</strong></div></td>
+              <td>67</td><td style="color:var(--success);font-weight:600">58%</td><td>5.1</td><td style="font-weight:700;color:var(--primary)">2,456</td>
+            </tr>
+            <tr>
+              <td class="lb-rank">5</td>
+              <td><div class="lb-player"><div class="lb-player-avatar">🐶</div>咸鱼翻身</div></td>
+              <td>55</td><td>55%</td><td>4.8</td><td style="font-weight:700">2,123</td>
+            </tr>
+            <tr>
+              <td class="lb-rank">6</td>
+              <td><div class="lb-player"><div class="lb-player-avatar">🐰</div>代码写累了</div></td>
+              <td>71</td><td>54%</td><td>4.5</td><td style="font-weight:700">1,987</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer style="text-align:center;padding:30px 20px;color:var(--text-light);font-size:0.8rem;">
+    <a href="index.html" style="color:var(--primary);font-weight:600">← 返回原型导航</a>
+  </footer>
+
+  <script>
+    // Tab switching
+    document.querySelectorAll('.lb-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

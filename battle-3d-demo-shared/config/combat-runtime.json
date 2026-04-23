@@ -1,0 +1,13 @@
+{
+  "tickRate": 20,
+  "snapshotRate": 12,
+  "maxRollbackWindowMs": 250,
+  "defaultCastTimeoutMs": 5000,
+  "defaultProjectileMaxLifetimeMs": 5000,
+  "defaultAreaMaxLifetimeMs": 15000,
+  "maxBufferedClientEvents": 128,
+  "notes": [
+    "首版运行参数与 battle-3d-demo 现有联机节奏保持接近，便于平滑迁移。",
+    "后续若服务端压测结果不理想，可优先调整快照频率与对象广播策略。"
+  ]
+}

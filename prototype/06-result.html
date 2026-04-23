@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸鱼大乱斗 - 对局结算</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #0F0A1A 0%, #1A1030 50%, #0F0A1A 100%);
+      color: var(--text-on-dark);
+    }
+
+    .result-container { max-width: 1000px; margin: 0 auto; padding: 40px 20px; }
+
+    /* Victory Banner */
+    .victory-banner {
+      text-align: center; margin-bottom: 40px;
+      animation: bounceIn 0.8s ease;
+    }
+    .victory-icon { font-size: 4rem; margin-bottom: 8px; animation: fishFloat 3s ease-in-out infinite; }
+    .victory-text {
+      font-family: var(--font-display); font-size: 3rem; font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .victory-win {
+      background: linear-gradient(135deg, var(--yellow), var(--primary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .victory-lose {
+      background: linear-gradient(135deg, #94a3b8, #64748b);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .victory-sub {
+      font-size: 1rem; color: var(--text-on-dark-mid);
+    }
+    .victory-stats {
+      display: flex; justify-content: center; gap: 32px; margin-top: 20px;
+    }
+    .vstat { text-align: center; }
+    .vstat-val {
+      font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
+      color: var(--yellow);
+    }
+    .vstat-label { font-size: 0.75rem; color: var(--text-on-dark-mid); }
+
+    /* Points Earned */
+    .points-card {
+      background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(255,217,61,0.08));
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: var(--radius-xl); padding: 20px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px;
+      animation: slideUp 0.5s ease 0.3s both;
+    }
+    .points-left { display: flex; align-items: center; gap: 12px; }
+    .points-icon { font-size: 2rem; }
+    .points-info {}
+    .points-title { font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; color: var(--primary-light); }
+    .points-detail { font-size: 0.8rem; color: var(--text-on-dark-mid); }
+    .points-total {
+      font-family: var(--font-display); font-size: 2rem; font-weight: 700;
+      color: var(--yellow);
+    }
+    .points-total span { font-size: 1rem; color: var(--text-on-dark-mid); }
+
+    /* MVP Card */
+    .mvp-section { margin-bottom: 36px; animation: slideUp 0.5s ease 0.5s both; }
+    .mvp-card {
+      background: linear-gradient(135deg, rgba(255,217,61,0.08), rgba(255,107,53,0.06));
+      border: 2px solid rgba(255,217,61,0.2);
+      border-radius: var(--radius-xl); padding: 24px 28px;
+      display: flex; align-items: center; gap: 20px;
+      position: relative; overflow: hidden;
+    }
+    .mvp-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 90% 50%, rgba(255,217,61,0.08), transparent 60%);
+    }
+    .mvp-badge {
+      position: absolute; top: 12px; right: 16px;
+      padding: 4px 14px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--yellow), var(--primary));
+      color: white; font-family: var(--font-display);
+      font-size: 0.75rem; font-weight: 700;
+    }
+    .mvp-avatar {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255,217,61,0.15), rgba(255,107,53,0.1));
+      border: 3px solid var(--yellow);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem; flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(255,217,61,0.3);
+      position: relative; z-index: 1;
+    }
+    .mvp-info { flex: 1; position: relative; z-index: 1; }
+    .mvp-name {
+      font-family: var(--font-display); font-size: 1.2rem; font-weight: 700;
+      color: var(--yellow); margin-bottom: 4px;
+    }
+    .mvp-hero { font-size: 0.85rem; color: var(--text-on-dark-mid); margin-bottom: 8px; }
+    .mvp-stats-row { display: flex; gap: 16px; }
+    .mvp-stat {
+      padding: 4px 12px; border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.04); font-size: 0.78rem;
+    }
+    .mvp-stat strong { color: var(--yellow); }
+    .mvp-like {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      cursor: pointer; transition: all var(--transition-fast);
+      position: relative; z-index: 1;
+    }
+    .mvp-like:hover { transform: scale(1.1); }
+    .mvp-like-icon { font-size: 1.5rem; }
+    .mvp-like-count { font-size: 0.75rem; color: var(--text-on-dark-mid); }
+
+    /* Score Table */
+    .score-section { animation: slideUp 0.5s ease 0.7s both; }
+    .score-tabs {
+      display: flex; gap: 4px; margin-bottom: 16px;
+    }
+    .score-tab {
+      padding: 8px 20px; border-radius: var(--radius-full);
+      font-family: var(--font-display); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all var(--transition-fast);
+      background: rgba(255,255,255,0.04); color: var(--text-on-dark-mid);
+    }
+    .score-tab.active { background: rgba(255,107,53,0.15); color: var(--primary-light); }
+    .score-tab:hover { background: rgba(255,107,53,0.1); }
+
+    .score-table {
+      width: 100%; border-collapse: collapse;
+    }
+    .score-table th {
+      text-align: left; padding: 10px 12px;
+      font-size: 0.72rem; color: var(--text-on-dark-mid);
+      font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .score-table td {
+      padding: 10px 12px; font-size: 0.85rem;
+      border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .score-table tr:hover td { background: rgba(255,255,255,0.02); }
+    .score-table .team-row-blue td { border-left: 3px solid var(--blue-team); }
+    .score-table .team-row-red td { border-left: 3px solid var(--red-team); }
+    .score-table .team-row-me td { background: rgba(255,217,61,0.04); border-left: 3px solid var(--yellow); }
+
+    .player-cell {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .player-cell-icon { font-size: 1.1rem; }
+    .player-cell-name { font-weight: 600; }
+    .player-cell-hero { font-size: 0.72rem; color: var(--text-on-dark-mid); }
+
+    .kda-cell { font-weight: 700; }
+    .kda-cell .k { color: var(--success); }
+    .kda-cell .d { color: var(--red-team-light); }
+    .kda-cell .a { color: var(--text-on-dark-mid); }
+
+    .dmg-bar {
+      width: 80px; height: 6px; background: rgba(255,255,255,0.06);
+      border-radius: 3px; overflow: hidden;
+    }
+    .dmg-bar-fill { height: 100%; border-radius: 3px; }
+    .dmg-dealt .dmg-bar-fill { background: linear-gradient(90deg, var(--primary), var(--yellow)); }
+    .dmg-taken .dmg-bar-fill { background: linear-gradient(90deg, var(--red-team), var(--pink)); }
+
+    .like-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; cursor: pointer; transition: all var(--transition-fast);
+    }
+    .like-btn:hover { background: rgba(255,143,171,0.15); border-color: var(--pink); transform: scale(1.15); }
+    .like-btn.liked { background: rgba(255,143,171,0.2); border-color: var(--pink); }
+
+    /* Team Headers in Table */
+    .team-header-row td {
+      padding: 12px !important;
+      background: rgba(255,255,255,0.02) !important;
+      font-family: var(--font-display); font-weight: 700;
+      font-size: 0.9rem; border: none !important;
+    }
+
+    /* Actions */
+    .result-actions {
+      display: flex; justify-content: center; gap: 16px;
+      margin-top: 40px;
+      animation: slideUp 0.5s ease 0.9s both;
+    }
+
+    /* Confetti */
+    .confetti {
+      position: fixed; top: -10px; pointer-events: none; z-index: 0;
+      animation: confettiFall linear forwards;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+      .victory-text { font-size: 2rem; }
+      .victory-stats { gap: 16px; }
+      .points-card { flex-direction: column; text-align: center; gap: 12px; }
+      .mvp-card { flex-direction: column; text-align: center; }
+      .mvp-stats-row { flex-wrap: wrap; justify-content: center; }
+      .score-table { font-size: 0.78rem; }
+      .score-table th, .score-table td { padding: 8px 6px; }
+      .dmg-bar { width: 50px; }
+      .result-actions { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="result-container">
+
+    <!-- Victory Banner -->
+    <div class="victory-banner">
+      <div class="victory-icon">🎉</div>
+      <div class="victory-text victory-win">胜利!</div>
+      <div class="victory-sub">蓝队率先达到 30 次击杀赢得胜利 · 用时 09:47</div>
+      <div class="victory-stats">
+        <div class="vstat">
+          <div class="vstat-val">30</div>
+          <div class="vstat-label">蓝队击杀</div>
+        </div>
+        <div class="vstat">
+          <div class="vstat-val">22</div>
+          <div class="vstat-label">红队击杀</div>
+        </div>
+        <div class="vstat">
+          <div class="vstat-val">09:47</div>
+          <div class="vstat-label">对局时长</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Points Earned -->
+    <div class="points-card">
+      <div class="points-left">
+        <span class="points-icon">🪙</span>
+        <div class="points-info">
+          <div class="points-title">积分结算</div>
+          <div class="points-detail">胜利 +20 · 连胜×3 +15 · MVP +10</div>
+        </div>
+      </div>
+      <div class="points-total">+45 <span>积分</span></div>
+    </div>
+
+    <!-- MVP -->
+    <div class="mvp-section">
+      <div class="mvp-card">
+        <div class="mvp-badge">全场 MVP</div>
+        <div class="mvp-avatar">🔮</div>
+        <div class="mvp-info">
+          <div class="mvp-name">摸鱼达人（你）</div>
+          <div class="mvp-hero">星焰法师 · 蓝队</div>
+          <div class="mvp-stats-row">
+            <div class="mvp-stat"><strong>8</strong> / 2 / 6 KDA</div>
+            <div class="mvp-stat">伤害 <strong>18,542</strong></div>
+            <div class="mvp-stat">参团率 <strong>87%</strong></div>
+          </div>
+        </div>
+        <div class="mvp-like" id="mvpLike">
+          <div class="mvp-like-icon">👍</div>
+          <div class="mvp-like-count">7 赞</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Table -->
+    <div class="score-section">
+      <div class="score-tabs">
+        <div class="score-tab active">总览</div>
+        <div class="score-tab">伤害统计</div>
+        <div class="score-tab">承伤统计</div>
+      </div>
+
+      <table class="score-table">
+        <thead>
+          <tr>
+            <th style="width:28%">玩家</th>
+            <th>KDA</th>
+            <th>伤害输出</th>
+            <th class="hide-mobile">承受伤害</th>
+            <th class="hide-mobile">治疗</th>
+            <th style="width:40px">赞</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Blue Team Header -->
+          <tr class="team-header-row">
+            <td colspan="6" style="color:var(--blue-team-light)">💙 蓝队（胜利）</td>
+          </tr>
+          <tr class="team-row-blue">
+            <td><div class="player-cell"><span class="player-cell-icon">🛡️</span><div><div class="player-cell-name">咸鱼翻身</div><div class="player-cell-hero">铁壁守护</div></div></div></td>
+            <td class="kda-cell"><span class="k">3</span>/<span class="d">4</span>/<span class="a">15</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:35%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">8,234</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:90%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">22,145</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">0</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-me">
+            <td><div class="player-cell"><span class="player-cell-icon">🔮</span><div><div class="player-cell-name" style="color:var(--yellow)">摸鱼达人（我）⭐</div><div class="player-cell-hero">星焰法师</div></div></div></td>
+            <td class="kda-cell"><span class="k">8</span>/<span class="d">2</span>/<span class="a">6</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:85%"></div></div><div style="font-size:0.7rem;color:var(--yellow);margin-top:2px">18,542</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:40%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">9,876</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">0</td>
+            <td></td>
+          </tr>
+          <tr class="team-row-blue">
+            <td><div class="player-cell"><span class="player-cell-icon">🏹</span><div><div class="player-cell-name">代码写累了</div><div class="player-cell-hero">疾风射手</div></div></div></td>
+            <td class="kda-cell"><span class="k">7</span>/<span class="d">5</span>/<span class="a">8</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:75%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">16,233</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:55%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">13,421</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">0</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-blue">
+            <td><div class="player-cell"><span class="player-cell-icon">💚</span><div><div class="player-cell-name">产品经理别改了</div><div class="player-cell-hero">温柔治愈</div></div></div></td>
+            <td class="kda-cell"><span class="k">1</span>/<span class="d">3</span>/<span class="a">22</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:15%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">3,411</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:30%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">7,233</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem;color:var(--success)">12,456</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-blue">
+            <td><div class="player-cell"><span class="player-cell-icon">⚔️</span><div><div class="player-cell-name">不想上班</div><div class="player-cell-hero">烈焰战士</div></div></div></td>
+            <td class="kda-cell"><span class="k">11</span>/<span class="d">8</span>/<span class="a">9</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:100%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">21,876</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:75%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">18,543</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">1,234</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+
+          <!-- Red Team Header -->
+          <tr class="team-header-row">
+            <td colspan="6" style="color:var(--red-team-light)">❤️ 红队（失败）</td>
+          </tr>
+          <tr class="team-row-red">
+            <td><div class="player-cell"><span class="player-cell-icon">🛡️</span><div><div class="player-cell-name">Bug制造机</div><div class="player-cell-hero">磐岩巨人</div></div></div></td>
+            <td class="kda-cell"><span class="k">2</span>/<span class="d">6</span>/<span class="a">12</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:25%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">5,876</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:85%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">20,987</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">0</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-red">
+            <td><div class="player-cell"><span class="player-cell-icon">❄️</span><div><div class="player-cell-name">划水一哥</div><div class="player-cell-hero">冰霜女巫</div></div></div></td>
+            <td class="kda-cell"><span class="k">6</span>/<span class="d">7</span>/<span class="a">5</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:65%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">14,233</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:45%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">10,876</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">0</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-red">
+            <td><div class="player-cell"><span class="player-cell-icon">🎯</span><div><div class="player-cell-name">运营狗的日常</div><div class="player-cell-hero">暗夜猎手</div></div></div></td>
+            <td class="kda-cell"><span class="k">9</span>/<span class="d">5</span>/<span class="a">3</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:80%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">17,654</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:35%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">8,543</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">0</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-red">
+            <td><div class="player-cell"><span class="player-cell-icon">🌿</span><div><div class="player-cell-name">摸鱼小王子</div><div class="player-cell-hero">自然之灵</div></div></div></td>
+            <td class="kda-cell"><span class="k">0</span>/<span class="d">5</span>/<span class="a">18</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:10%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">2,345</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:25%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">6,123</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem;color:var(--success)">15,678</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+          <tr class="team-row-red">
+            <td><div class="player-cell"><span class="player-cell-icon">🔥</span><div><div class="player-cell-name">React大师</div><div class="player-cell-hero">狂暴剑客</div></div></div></td>
+            <td class="kda-cell"><span class="k">5</span>/<span class="d">7</span>/<span class="a">4</span></td>
+            <td><div class="dmg-bar dmg-dealt"><div class="dmg-bar-fill" style="width:55%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">12,098</div></td>
+            <td class="hide-mobile"><div class="dmg-bar dmg-taken"><div class="dmg-bar-fill" style="width:65%"></div></div><div style="font-size:0.7rem;color:var(--text-on-dark-mid);margin-top:2px">15,876</div></td>
+            <td class="hide-mobile" style="font-size:0.8rem">876</td>
+            <td><button class="like-btn">❤️</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="result-actions">
+      <button class="btn btn-primary btn-lg" onclick="location.href='02-lobby.html'">再来一局</button>
+      <button class="btn btn-outline btn-lg" style="border-color:rgba(255,255,255,0.15);color:var(--text-on-dark)" onclick="location.href='07-profile.html'">查看数据</button>
+      <button class="btn btn-ghost btn-lg" style="color:var(--text-on-dark-mid)" onclick="location.href='01-home.html'">返回首页</button>
+    </div>
+  </div>
+
+  <script>
+    // Confetti
+    const colors = ['#FF6B35', '#FFD93D', '#FF8FAB', '#C4B5FD', '#60A5FA', '#4ADE80'];
+    for (let i = 0; i < 40; i++) {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      const size = Math.random() * 8 + 4;
+      c.style.cssText = `
+        left: ${Math.random() * 100}%;
+        width: ${size}px; height: ${size}px;
+        background: ${colors[Math.floor(Math.random() * colors.length)]};
+        border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+        animation-duration: ${Math.random() * 3 + 3}s;
+        animation-delay: ${Math.random() * 2}s;
+      `;
+      document.body.appendChild(c);
+    }
+
+    // Like buttons
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        btn.classList.toggle('liked');
+        btn.textContent = btn.classList.contains('liked') ? '💖' : '❤️';
+      });
+    });
+
+    // MVP like
+    document.getElementById('mvpLike').addEventListener('click', function() {
+      this.querySelector('.mvp-like-count').textContent = '8 赞';
+      this.querySelector('.mvp-like-icon').textContent = '👍✨';
+    });
+
+    // Score tabs
+    document.querySelectorAll('.score-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.score-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

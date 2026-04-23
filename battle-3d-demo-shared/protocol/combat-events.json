@@ -1,0 +1,94 @@
+{
+  "requestTypes": {
+    "move": {
+      "description": "移动输入请求",
+      "payload": ["requestId", "roomId", "casterId", "targetPoint", "clientTimestamp"]
+    },
+    "stop": {
+      "description": "停止输入请求",
+      "payload": ["requestId", "roomId", "casterId", "clientTimestamp"]
+    },
+    "basicAttack": {
+      "description": "普攻请求",
+      "payload": ["requestId", "roomId", "casterId", "targetEntityId", "clientTimestamp"]
+    },
+    "castSpell": {
+      "description": "统一技能施法请求",
+      "payload": ["requestId", "roomId", "casterId", "slot", "skillId", "targetEntityId", "targetPoint", "targetDirection", "clientTimestamp", "clientPredictedPosition", "extraContext"]
+    },
+    "cancelCast": {
+      "description": "主动取消引导或施法请求",
+      "payload": ["requestId", "roomId", "casterId", "castInstanceId", "clientTimestamp"]
+    }
+  },
+  "serverEventTypes": {
+    "spellCastAccepted": {
+      "description": "服务端接受施法请求",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "requestId", "castInstanceId", "casterId", "slot", "skillId"]
+    },
+    "spellCastRejected": {
+      "description": "服务端拒绝施法请求",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "requestId", "casterId", "slot", "skillId", "reasonCode", "reasonMessage"]
+    },
+    "spellCastStarted": {
+      "description": "技能正式进入施法开始阶段",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "castInstanceId", "casterId", "skillId", "slot", "stage", "facing", "targetEntityId", "targetPoint"]
+    },
+    "spellStageChanged": {
+      "description": "技能实例阶段切换",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "castInstanceId", "casterId", "skillId", "previousStage", "nextStage"]
+    },
+    "spellInterrupted": {
+      "description": "技能实例被打断",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "castInstanceId", "casterId", "skillId", "reasonCode"]
+    },
+    "projectileSpawned": {
+      "description": "投射物创建",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "projectileId", "castInstanceId", "skillId", "ownerId", "position", "direction", "speed"]
+    },
+    "projectileDestroyed": {
+      "description": "投射物销毁",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "projectileId", "reasonCode"]
+    },
+    "areaCreated": {
+      "description": "持续区域创建",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "areaId", "castInstanceId", "skillId", "ownerId", "position", "radius", "durationMs"]
+    },
+    "areaExpired": {
+      "description": "持续区域过期",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "areaId"]
+    },
+    "statusApplied": {
+      "description": "状态生效",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "statusInstanceId", "statusId", "sourceEntityId", "targetEntityId", "stacks", "durationMs"]
+    },
+    "statusRemoved": {
+      "description": "状态移除",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "statusInstanceId", "statusId", "targetEntityId", "reasonCode"]
+    },
+    "damageApplied": {
+      "description": "伤害结算结果",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "sourceEntityId", "targetEntityId", "skillId", "damageType", "amount", "remainingHp"]
+    },
+    "healApplied": {
+      "description": "治疗结算结果",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "sourceEntityId", "targetEntityId", "skillId", "amount", "currentHp"]
+    },
+    "shieldChanged": {
+      "description": "护盾变化结果",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "targetEntityId", "shieldDelta", "shieldValue"]
+    },
+    "displacementResolved": {
+      "description": "位移裁决结果",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "targetEntityId", "displacementType", "startPosition", "endPosition"]
+    },
+    "combatSnapshot": {
+      "description": "权威战斗快照",
+      "payload": ["eventId", "sequence", "roomId", "serverTime", "frame", "entities", "projectiles", "areas", "statuses"]
+    }
+  },
+  "notes": [
+    "所有服务端事件必须携带 sequence 与 serverTime，用于客户端幂等与乱序处理。",
+    "客户端发送的是输入意图，而不是命中、伤害等结果型上报。"
+  ]
+}

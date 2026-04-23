@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸鱼大乱斗 - UI原型导航</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #FFF5EB 0%, #FFE8D6 30%, #FFF0F5 60%, #F5F0FF 100%);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Floating decorations */
+    .bg-deco {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-fish-1 { top: 10%; left: 5%; font-size: 3rem; opacity: 0.1; animation: fishFloat 5s ease-in-out infinite; }
+    .bg-fish-2 { top: 50%; right: 8%; font-size: 2.5rem; opacity: 0.08; animation: fishFloat 4s ease-in-out infinite 1s; }
+    .bg-fish-3 { bottom: 15%; left: 15%; font-size: 2rem; opacity: 0.06; animation: fishFloat 6s ease-in-out infinite 0.5s; }
+    .bg-bubble-1 { top: 20%; right: 15%; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(255,107,53,0.08), transparent); }
+    .bg-bubble-2 { bottom: 20%; left: 10%; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(255,143,171,0.06), transparent); }
+    .bg-bubble-3 { top: 60%; left: 50%; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, rgba(196,181,253,0.08), transparent); }
+
+    .hero-section {
+      padding: 100px 20px 60px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-mascot {
+      font-size: 5rem;
+      margin-bottom: 16px;
+      display: inline-block;
+      animation: fishFloat 3s ease-in-out infinite;
+    }
+
+    .hero-title {
+      font-size: 3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--primary), var(--pink), var(--lavender-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: var(--text-mid);
+      max-width: 600px;
+      margin: 0 auto 8px;
+    }
+
+    .hero-version {
+      font-size: 0.8rem;
+      color: var(--text-light);
+      margin-bottom: 40px;
+    }
+
+    /* Grid */
+    .proto-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .proto-card {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+      border-radius: var(--radius-xl);
+      padding: 32px 28px;
+      border: 2px solid rgba(255, 107, 53, 0.08);
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-normal);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text-dark);
+      display: block;
+    }
+
+    .proto-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      border-radius: 4px 4px 0 0;
+      transition: height var(--transition-normal);
+    }
+
+    .proto-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: rgba(255, 107, 53, 0.2);
+    }
+
+    .proto-card:hover::before {
+      height: 6px;
+    }
+
+    .proto-card:nth-child(1)::before { background: linear-gradient(90deg, var(--primary), var(--yellow)); }
+    .proto-card:nth-child(2)::before { background: linear-gradient(90deg, var(--yellow), var(--primary)); }
+    .proto-card:nth-child(3)::before { background: linear-gradient(90deg, var(--pink), var(--primary)); }
+    .proto-card:nth-child(4)::before { background: linear-gradient(90deg, var(--blue-team), var(--lavender)); }
+    .proto-card:nth-child(5)::before { background: linear-gradient(90deg, var(--lavender), var(--pink)); }
+    .proto-card:nth-child(6)::before { background: linear-gradient(90deg, var(--primary), var(--red-team)); }
+    .proto-card:nth-child(7)::before { background: linear-gradient(90deg, var(--yellow), var(--pink)); }
+    .proto-card:nth-child(8)::before { background: linear-gradient(90deg, var(--blue-team), var(--primary)); }
+    .proto-card:nth-child(9)::before { background: linear-gradient(90deg, var(--success), var(--blue-team)); }
+
+    .proto-card-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      margin-bottom: 16px;
+    }
+
+    .proto-card:nth-child(1) .proto-card-icon { background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(255,217,61,0.15)); }
+    .proto-card:nth-child(2) .proto-card-icon { background: linear-gradient(135deg, rgba(255,217,61,0.15), rgba(255,107,53,0.15)); }
+    .proto-card:nth-child(3) .proto-card-icon { background: linear-gradient(135deg, rgba(255,143,171,0.15), rgba(255,107,53,0.15)); }
+    .proto-card:nth-child(4) .proto-card-icon { background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(196,181,253,0.15)); }
+    .proto-card:nth-child(5) .proto-card-icon { background: linear-gradient(135deg, rgba(196,181,253,0.15), rgba(255,143,171,0.15)); }
+    .proto-card:nth-child(6) .proto-card-icon { background: linear-gradient(135deg, rgba(255,107,53,0.15), rgba(248,113,113,0.15)); }
+    .proto-card:nth-child(7) .proto-card-icon { background: linear-gradient(135deg, rgba(255,217,61,0.15), rgba(255,143,171,0.15)); }
+    .proto-card:nth-child(8) .proto-card-icon { background: linear-gradient(135deg, rgba(96,165,250,0.15), rgba(255,107,53,0.15)); }
+    .proto-card:nth-child(9) .proto-card-icon { background: linear-gradient(135deg, rgba(74,222,128,0.15), rgba(96,165,250,0.15)); }
+
+    .proto-card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      font-family: var(--font-display);
+    }
+
+    .proto-card-desc {
+      font-size: 0.88rem;
+      color: var(--text-mid);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .proto-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .proto-card-tag {
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: var(--bg-warm);
+      color: var(--text-mid);
+    }
+
+    .proto-card-arrow {
+      position: absolute;
+      top: 32px;
+      right: 28px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 107, 53, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: var(--primary);
+      transition: all var(--transition-normal);
+    }
+
+    .proto-card:hover .proto-card-arrow {
+      background: var(--primary);
+      color: white;
+      transform: translateX(4px);
+    }
+
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-light);
+      font-size: 0.85rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-fish { display: inline-block; animation: fishFloat 3s ease-in-out infinite; }
+
+    .section-label {
+      max-width: 1100px;
+      margin: 0 auto 20px;
+      padding: 0 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-label h2 {
+      font-size: 1.4rem;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-label h2::after {
+      content: '';
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, var(--primary-light), transparent);
+      border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .hero-title { font-size: 2.2rem; }
+      .hero-mascot { font-size: 3.5rem; }
+      .proto-grid { grid-template-columns: 1fr; gap: 16px; }
+    }
+
+    @media (max-width: 480px) {
+      .hero-title { font-size: 1.8rem; }
+      .hero-section { padding: 80px 16px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Decorations -->
+  <div class="bg-deco bg-fish-1">🐟</div>
+  <div class="bg-deco bg-fish-2">🐠</div>
+  <div class="bg-deco bg-fish-3">🎣</div>
+  <div class="bg-deco bg-bubble-1"></div>
+  <div class="bg-deco bg-bubble-2"></div>
+  <div class="bg-deco bg-bubble-3"></div>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-mascot">🐡</div>
+    <h1 class="hero-title">摸鱼大乱斗</h1>
+    <p class="hero-subtitle">5v5 实时对战 HTML 原型图集 — Q版可爱风格</p>
+    <p class="hero-version">Prototype v1.0 · 基于《干物妹！小埋》画风意境</p>
+  </section>
+
+  <!-- Core Flow -->
+  <div class="section-label">
+    <h2>核心业务流程</h2>
+  </div>
+
+  <div class="proto-grid">
+    <a class="proto-card" href="01-home.html">
+      <div class="proto-card-icon">🏠</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">游戏首页</h3>
+      <p class="proto-card-desc">摸鱼大乱斗入口页，包含游戏介绍、开始游戏按钮、公告栏、在线人数等</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">入口页</span>
+        <span class="proto-card-tag">品牌展示</span>
+        <span class="proto-card-tag">快速开始</span>
+      </div>
+    </a>
+
+    <a class="proto-card" href="02-lobby.html">
+      <div class="proto-card-icon">🎮</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">游戏大厅</h3>
+      <p class="proto-card-desc">房间列表、创建房间、快速加入、搜索房间、在线玩家列表</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">房间管理</span>
+        <span class="proto-card-tag">匹配系统</span>
+        <span class="proto-card-tag">社交</span>
+      </div>
+    </a>
+
+    <a class="proto-card" href="03-room.html">
+      <div class="proto-card-icon">👥</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">房间 & 队伍</h3>
+      <p class="proto-card-desc">蓝红队伍选择、准备/取消、队友列表、邀请链接、倒计时开局</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">队伍选择</span>
+        <span class="proto-card-tag">准备状态</span>
+        <span class="proto-card-tag">邀请分享</span>
+      </div>
+    </a>
+
+    <a class="proto-card" href="04-loading.html">
+      <div class="proto-card-icon">🎲</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">加载 & 英雄分配</h3>
+      <p class="proto-card-desc">游戏加载进度、随机英雄分配动画、英雄信息展示、加载提示</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">加载过渡</span>
+        <span class="proto-card-tag">随机英雄</span>
+        <span class="proto-card-tag">动画效果</span>
+      </div>
+    </a>
+
+    <a class="proto-card" href="05-battle-hud.html">
+      <div class="proto-card-icon">⚔️</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">对战主界面 HUD</h3>
+      <p class="proto-card-desc">核心战斗UI：技能栏QWER+DF、血蓝条、小地图、KDA面板、表情轮盘、计时器、击杀播报</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">技能系统</span>
+        <span class="proto-card-tag">实时HUD</span>
+        <span class="proto-card-tag">战斗核心</span>
+      </div>
+    </a>
+
+    <a class="proto-card" href="06-result.html">
+      <div class="proto-card-icon">🏆</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">对局结算</h3>
+      <p class="proto-card-desc">胜利/失败动画、10人战绩详情、MVP展示、积分结算、点赞队友</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">战绩统计</span>
+        <span class="proto-card-tag">MVP</span>
+        <span class="proto-card-tag">积分奖励</span>
+      </div>
+    </a>
+
+    <a class="proto-card" href="07-profile.html">
+      <div class="proto-card-icon">📊</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">个人数据看板</h3>
+      <p class="proto-card-desc">战绩总览、胜率趋势、英雄使用统计、对局历史、排行榜</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">数据统计</span>
+        <span class="proto-card-tag">排行榜</span>
+        <span class="proto-card-tag">个人中心</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Extended Features -->
+  <div class="section-label" style="margin-top: 20px;">
+    <h2>扩展功能原型</h2>
+  </div>
+
+  <div class="proto-grid" style="padding-bottom: 40px;">
+    <a class="proto-card" href="08-extended.html">
+      <div class="proto-card-icon">🎰</div>
+      <div class="proto-card-arrow">→</div>
+      <h3 class="proto-card-title">扩展功能集合</h3>
+      <p class="proto-card-desc">海克斯强化选择、简化装备商店、老板键伪装、UI隐蔽模式 — 全部扩展特性原型</p>
+      <div class="proto-card-tags">
+        <span class="proto-card-tag">海克斯强化</span>
+        <span class="proto-card-tag">装备商店</span>
+        <span class="proto-card-tag">老板键</span>
+        <span class="proto-card-tag">隐蔽模式</span>
+      </div>
+    </a>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p><span class="footer-fish">🐟</span> 摸鱼大乱斗 · UI Prototype v1.0</p>
+    <p style="margin-top:4px; font-size:0.75rem;">风格参考：《干物妹！小埋》Q版可爱风</p>
+  </footer>
+
+</body>
+</html>

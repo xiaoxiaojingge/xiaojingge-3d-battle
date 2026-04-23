@@ -1,0 +1,219 @@
+{
+  "heroId": "darius",
+  "displayName": "德莱厄斯",
+  "skills": [
+    {
+      "skillId": "darius_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 290,
+        "backswingMs": 180,
+        "range": 3.5,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 900
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 62,
+            "bonusAdRatio": 1
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "basicAttack",
+        "voiceSlot": "basicAttack"
+      }
+    },
+    {
+      "skillId": "darius_q_decimate",
+      "slot": "q",
+      "name": "大杀四方",
+      "tags": ["spell", "self_cast", "area", "physical"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 280,
+        "backswingMs": 150,
+        "radius": 4,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 8000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 40
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 85,
+            "bonusAdRatio": 0.7
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "q",
+        "voiceSlot": "q"
+      }
+    },
+    {
+      "skillId": "darius_w_crippling_strike",
+      "slot": "w",
+      "name": "致残打击",
+      "tags": ["spell", "target_unit", "physical", "slow"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 180,
+        "backswingMs": 120,
+        "range": 3.5,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 5000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 30
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 70,
+            "bonusAdRatio": 1.1
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_slow",
+            "durationMs": 1000,
+            "target": "hit_target"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "w",
+        "voiceSlot": "w"
+      }
+    },
+    {
+      "skillId": "darius_e_apprehend",
+      "slot": "e",
+      "name": "强力牵引",
+      "tags": ["spell", "directional", "line", "slow"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 220,
+        "backswingMs": 120,
+        "range": 5,
+        "width": 2.5,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 16000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 45
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 35,
+            "bonusAdRatio": 0.4
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_slow",
+            "durationMs": 1200,
+            "target": "hit_target"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "e",
+        "voiceSlot": "e"
+      }
+    },
+    {
+      "skillId": "darius_r_noxian_guillotine",
+      "slot": "r",
+      "name": "诺克萨斯断头台",
+      "tags": ["spell", "target_unit", "ultimate", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 220,
+        "backswingMs": 250,
+        "range": 5,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 65000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 100
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 220,
+            "bonusAdRatio": 0.9
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "r",
+        "voiceSlot": "r"
+      }
+    }
+  ]
+}

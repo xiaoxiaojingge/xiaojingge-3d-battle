@@ -1,0 +1,307 @@
+{
+  "heroId": "yasuo",
+  "displayName": "亚索",
+  "passives": [
+    {
+      "skillId": "yasuo_passive_way_of_the_wanderer",
+      "slot": "passive",
+      "name": "浪客之道",
+      "tags": ["passive", "shield", "crit_modifier"],
+      "flow": {
+        "enabled": true,
+        "maxValue": 100,
+        "gainRules": {
+          "movePerUnit": 1.2,
+          "dashBonus": 18
+        },
+        "shieldStatusId": "yasuo_flow_shield_ready",
+        "shieldValueFormula": {
+          "base": 110,
+          "bonusAdRatio": 0.5
+        }
+      },
+      "critModifier": {
+        "bonusCritRatePercent": 100,
+        "critDamageScale": 0.9
+      }
+    }
+  ],
+  "skills": [
+    {
+      "skillId": "yasuo_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "targeted", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 250,
+        "backswingMs": 180,
+        "range": 3,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "cooldown": {
+        "baseMs": 650
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 65,
+            "bonusAdRatio": 1
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "basicAttack",
+        "voiceSlot": "basicAttack"
+      }
+    },
+    {
+      "skillId": "yasuo_q_steel_tempest",
+      "slot": "q",
+      "name": "斩钢闪",
+      "tags": ["spell", "directional", "line", "physical", "yasuo_q"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 250,
+        "backswingMs": 120,
+        "range": 7,
+        "width": 1.1,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 3500
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 20,
+            "bonusAdRatio": 1.05
+          }
+        ],
+        "onSuccessCast": [
+          {
+            "type": "ApplyBuff",
+            "statusId": "yasuo_q_stack",
+            "durationMs": 10000,
+            "stacks": 1
+          }
+        ]
+      },
+      "variants": [
+        {
+          "variantId": "q3",
+          "condition": {
+            "requiresStatusId": "yasuo_q_stack",
+            "minStacks": 2
+          },
+          "overrideTags": ["projectile", "airborne"],
+          "projectile": {
+            "speed": 18,
+            "maxDistance": 14,
+            "radius": 0.9,
+            "blockable": true
+          },
+          "effects": {
+            "onImpact": [
+              {
+                "type": "Damage",
+                "damageType": "physical",
+                "base": 20,
+                "bonusAdRatio": 1.05
+              },
+              {
+                "type": "Knockup",
+                "durationMs": 900,
+                "statusId": "airborne"
+              },
+              {
+                "type": "ApplyBuff",
+                "statusId": "yasuo_last_breath_window",
+                "durationMs": 1300,
+                "target": "hit_target"
+              }
+            ],
+            "onSuccessCast": [
+              {
+                "type": "RemoveBuff",
+                "statusId": "yasuo_q_stack",
+                "removeAllStacks": true
+              }
+            ]
+          },
+          "presentation": {
+            "animationSlot": "q",
+            "voiceSlot": "q"
+          }
+        }
+      ],
+      "presentation": {
+        "animationSlot": "q",
+        "voiceSlot": "q"
+      }
+    },
+    {
+      "skillId": "yasuo_w_wind_wall",
+      "slot": "w",
+      "name": "风之障壁",
+      "tags": ["spell", "terrain", "counter", "projectile_blocker"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 200,
+        "backswingMs": 120,
+        "range": 5,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 26000
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "SpawnTerrain",
+            "terrainType": "wind_wall",
+            "durationMs": 4000,
+            "length": 7,
+            "thickness": 0.6,
+            "height": 4,
+            "interceptsTags": ["projectile_blockable"]
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "w",
+        "voiceSlot": "w"
+      }
+    },
+    {
+      "skillId": "yasuo_e_sweeping_blade",
+      "slot": "e",
+      "name": "踏前斩",
+      "tags": ["spell", "target_unit", "dash", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 50,
+        "backswingMs": 100,
+        "range": 6,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "cannotTargetWithStatusId": "yasuo_e_target_mark"
+        }
+      },
+      "cooldown": {
+        "baseMs": 500
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Dash",
+            "dashType": "through_target",
+            "distanceOffset": 1.4,
+            "speed": 22
+          }
+        ],
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "magic",
+            "base": 60,
+            "apRatio": 0,
+            "bonusAdRatio": 0.2
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "yasuo_e_target_mark",
+            "durationMs": 9000,
+            "target": "hit_target"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "e",
+        "voiceSlot": "e"
+      }
+    },
+    {
+      "skillId": "yasuo_r_last_breath",
+      "slot": "r",
+      "name": "狂风绝息斩",
+      "tags": ["spell", "target_unit", "ultimate", "airborne_finisher"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 150,
+        "backswingMs": 400,
+        "range": 12,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": false,
+        "targetRules": {
+          "enemyOnly": true,
+          "requiresTargetStatusId": "yasuo_last_breath_window"
+        }
+      },
+      "cooldown": {
+        "baseMs": 70000
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Teleport",
+            "teleportType": "relative_to_target",
+            "offsetBehindTarget": 1.2
+          }
+        ],
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 200,
+            "bonusAdRatio": 1.5
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "yasuo_ultimate_buff",
+            "durationMs": 15000,
+            "target": "self"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "r",
+        "voiceSlot": "r"
+      }
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "heroId": "braum",
+  "displayName": "布隆",
+  "skills": [
+    {
+      "skillId": "braum_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 280,
+        "backswingMs": 180,
+        "range": 3,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 850
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 56,
+            "bonusAdRatio": 1
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "basicAttack",
+        "voiceSlot": "basicAttack"
+      }
+    },
+    {
+      "skillId": "braum_q_winters_bite",
+      "slot": "q",
+      "name": "寒冬之咬",
+      "tags": ["spell", "directional", "line", "slow"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 240,
+        "backswingMs": 120,
+        "range": 9,
+        "width": 1,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 7000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 45
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "magic",
+            "base": 70,
+            "apRatio": 0.3
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_slow",
+            "durationMs": 1500,
+            "target": "hit_target"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "q",
+        "voiceSlot": "q"
+      }
+    },
+    {
+      "skillId": "braum_w_stand_behind_me",
+      "slot": "w",
+      "name": "坚不可摧",
+      "tags": ["spell", "self_cast", "shield"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 180,
+        "backswingMs": 100,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 12000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 50
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Shield",
+            "base": 110,
+            "target": "self"
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_move_speed_up",
+            "durationMs": 1500,
+            "target": "self"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "w",
+        "voiceSlot": "w"
+      }
+    },
+    {
+      "skillId": "braum_e_unbreakable",
+      "slot": "e",
+      "name": "不屈之盾",
+      "tags": ["spell", "self_cast", "shield"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 160,
+        "backswingMs": 100,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 14000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 60
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Shield",
+            "base": 140,
+            "target": "self"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "e",
+        "voiceSlot": "e"
+      }
+    },
+    {
+      "skillId": "braum_r_glacial_fissure",
+      "slot": "r",
+      "name": "冰川裂缝",
+      "tags": ["spell", "directional", "line", "ultimate", "airborne"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 320,
+        "backswingMs": 220,
+        "range": 12,
+        "width": 2,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 70000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 100
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "magic",
+            "base": 180,
+            "apRatio": 0.4
+          },
+          {
+            "type": "Knockup",
+            "durationMs": 700,
+            "statusId": "airborne"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "r",
+        "voiceSlot": "r"
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  overscroll-behavior: none;
+}
+
+body {
+  touch-action: none;
+}
+
+:root {
+  --game-dark: #080c18;
+  --game-blue: #64b5f6;
+  --game-red: #ef5350;
+  --game-gold: #fde047;
+}

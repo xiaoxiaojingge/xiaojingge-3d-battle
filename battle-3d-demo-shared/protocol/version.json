@@ -1,0 +1,8 @@
+{
+  "protocolVersion": "0.1.0",
+  "schemaVersion": 1,
+  "combatEventVersion": 1,
+  "statusDefinitionVersion": 1,
+  "heroSkillDefinitionVersion": 1,
+  "description": "3D 对战技能系统共享协议首版基线，用于客户端与 battle-3d-demo-server 的兼容校验。"
+}

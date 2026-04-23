@@ -1,0 +1,100 @@
+{
+  "controlTypes": [
+    "stun",
+    "silence",
+    "root",
+    "disarm",
+    "knockup",
+    "knockback",
+    "suppression",
+    "slow",
+    "fear",
+    "charm",
+    "blind"
+  ],
+  "statusDefinitions": [
+    {
+      "statusId": "generic_move_speed_up",
+      "category": "buff",
+      "stackingRule": "refresh_duration",
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 2000,
+      "grants": {
+        "moveSpeedPercent": 0.15
+      }
+    },
+    {
+      "statusId": "generic_slow",
+      "category": "debuff",
+      "stackingRule": "take_strongest",
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 1500,
+      "control": {
+        "type": "slow",
+        "moveSpeedPercent": -0.2
+      }
+    },
+    {
+      "statusId": "airborne",
+      "category": "control",
+      "stackingRule": "take_longer_duration",
+      "refreshRule": "take_longer_duration",
+      "defaultDurationMs": 900,
+      "control": {
+        "type": "knockup",
+        "canMove": false,
+        "canCastSpell": false,
+        "canBasicAttack": false
+      }
+    },
+    {
+      "statusId": "projectile_blockable",
+      "category": "tag",
+      "stackingRule": "no_stack",
+      "refreshRule": "ignore",
+      "defaultDurationMs": 0,
+      "tags": ["projectile_blockable"]
+    },
+    {
+      "statusId": "yasuo_flow_shield_ready",
+      "category": "buff",
+      "stackingRule": "no_stack",
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 6000,
+      "tags": ["shield_ready", "yasuo_passive"]
+    },
+    {
+      "statusId": "yasuo_q_stack",
+      "category": "buff",
+      "stackingRule": "stack_with_cap",
+      "stackCap": 2,
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 10000,
+      "tags": ["yasuo_q_state"]
+    },
+    {
+      "statusId": "yasuo_e_target_mark",
+      "category": "debuff",
+      "stackingRule": "no_stack",
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 9000,
+      "tags": ["yasuo_e_recent_target"]
+    },
+    {
+      "statusId": "yasuo_last_breath_window",
+      "category": "tag",
+      "stackingRule": "no_stack",
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 1300,
+      "tags": ["yasuo_r_valid_target"]
+    },
+    {
+      "statusId": "yasuo_ultimate_buff",
+      "category": "buff",
+      "stackingRule": "no_stack",
+      "refreshRule": "refresh_duration",
+      "defaultDurationMs": 15000,
+      "tags": ["yasuo_r_buff"]
+    }
+  ]
+}

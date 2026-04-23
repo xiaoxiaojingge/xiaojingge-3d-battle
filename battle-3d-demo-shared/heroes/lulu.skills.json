@@ -1,0 +1,129 @@
+{
+  "heroId": "lulu",
+  "displayName": "璐璐",
+  "skills": [
+    {
+      "skillId": "lulu_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit", "magic"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 250,
+        "backswingMs": 150,
+        "range": 7,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 850 },
+      "cost": { "resourceType": "none", "amount": 0 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 50, "apRatio": 0.2 }
+        ]
+      },
+      "presentation": { "animationSlot": "basicAttack", "voiceSlot": "basicAttack" }
+    },
+    {
+      "skillId": "lulu_q_glitterlance",
+      "slot": "q",
+      "name": "闪耀之矛",
+      "tags": ["spell", "directional", "line", "magic", "slow"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 220,
+        "backswingMs": 120,
+        "range": 9,
+        "width": 0.8,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 7000 },
+      "cost": { "resourceType": "mana", "amount": 50 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 82, "apRatio": 0.5 },
+          { "type": "ApplyBuff", "statusId": "generic_slow", "durationMs": 1200, "target": "hit_target" }
+        ]
+      },
+      "presentation": { "animationSlot": "q", "voiceSlot": "q" }
+    },
+    {
+      "skillId": "lulu_w_whimsy",
+      "slot": "w",
+      "name": "异想天开",
+      "tags": ["spell", "target_unit", "buff"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 160,
+        "backswingMs": 100,
+        "range": 7,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "allyOnly": true, "allowSelf": true }
+      },
+      "cooldown": { "baseMs": 14000 },
+      "cost": { "resourceType": "mana", "amount": 60 },
+      "effects": {
+        "onImpact": [
+          { "type": "ApplyBuff", "statusId": "generic_move_speed_up", "durationMs": 2000, "target": "hit_target" }
+        ]
+      },
+      "presentation": { "animationSlot": "w", "voiceSlot": "w" }
+    },
+    {
+      "skillId": "lulu_e_help_pix",
+      "slot": "e",
+      "name": "仙灵祝福",
+      "tags": ["spell", "target_unit", "shield"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 160,
+        "backswingMs": 100,
+        "range": 7,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "allyOnly": true, "allowSelf": true }
+      },
+      "cooldown": { "baseMs": 8000 },
+      "cost": { "resourceType": "mana", "amount": 70 },
+      "effects": {
+        "onImpact": [
+          { "type": "Shield", "base": 130, "target": "hit_target" }
+        ]
+      },
+      "presentation": { "animationSlot": "e", "voiceSlot": "e" }
+    },
+    {
+      "skillId": "lulu_r_wild_growth",
+      "slot": "r",
+      "name": "狂野生长",
+      "tags": ["spell", "target_unit", "ultimate", "shield"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 180,
+        "backswingMs": 140,
+        "range": 8,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "allyOnly": true, "allowSelf": true }
+      },
+      "cooldown": { "baseMs": 75000 },
+      "cost": { "resourceType": "mana", "amount": 100 },
+      "effects": {
+        "onImpact": [
+          { "type": "Shield", "base": 200, "target": "hit_target" },
+          { "type": "ApplyBuff", "statusId": "generic_move_speed_up", "durationMs": 1200, "target": "hit_target" }
+        ]
+      },
+      "presentation": { "animationSlot": "r", "voiceSlot": "r" }
+    }
+  ]
+}

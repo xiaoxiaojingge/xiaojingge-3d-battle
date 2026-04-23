@@ -1,0 +1,131 @@
+{
+  "heroId": "jhin",
+  "displayName": "烬",
+  "skills": [
+    {
+      "skillId": "jhin_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 260,
+        "backswingMs": 180,
+        "range": 10,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 900 },
+      "cost": { "resourceType": "none", "amount": 0 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "physical", "base": 64, "bonusAdRatio": 1.1 }
+        ]
+      },
+      "presentation": { "animationSlot": "basicAttack", "voiceSlot": "basicAttack" }
+    },
+    {
+      "skillId": "jhin_q_dancing_grenade",
+      "slot": "q",
+      "name": "跳弹奇兵",
+      "tags": ["spell", "target_unit", "magic"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 180,
+        "backswingMs": 100,
+        "range": 8,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 7000 },
+      "cost": { "resourceType": "mana", "amount": 40 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 88, "apRatio": 0.45 }
+        ]
+      },
+      "presentation": { "animationSlot": "q", "voiceSlot": "q" }
+    },
+    {
+      "skillId": "jhin_w_deadly_flourish",
+      "slot": "w",
+      "name": "致命绽放",
+      "tags": ["spell", "directional", "line", "physical", "slow"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 240,
+        "backswingMs": 140,
+        "range": 25,
+        "width": 0.6,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 12000 },
+      "cost": { "resourceType": "mana", "amount": 50 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "physical", "base": 90, "bonusAdRatio": 0.6 },
+          { "type": "ApplyBuff", "statusId": "generic_slow", "durationMs": 1200, "target": "hit_target" }
+        ]
+      },
+      "presentation": { "animationSlot": "w", "voiceSlot": "w" }
+    },
+    {
+      "skillId": "jhin_e_captive_audience",
+      "slot": "e",
+      "name": "迷魅之雷",
+      "tags": ["spell", "target_point", "area", "magic", "slow"],
+      "cast": {
+        "type": "target_point",
+        "castTimeMs": 220,
+        "backswingMs": 120,
+        "range": 10,
+        "radius": 1,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 18000 },
+      "cost": { "resourceType": "mana", "amount": 45 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 92, "apRatio": 0.6 },
+          { "type": "ApplyBuff", "statusId": "generic_slow", "durationMs": 1500, "target": "hit_target" }
+        ]
+      },
+      "presentation": { "animationSlot": "e", "voiceSlot": "e" }
+    },
+    {
+      "skillId": "jhin_r_curtain_call",
+      "slot": "r",
+      "name": "美如画",
+      "tags": ["spell", "directional", "line", "ultimate", "physical"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 300,
+        "backswingMs": 180,
+        "range": 25,
+        "width": 1.8,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 70000 },
+      "cost": { "resourceType": "mana", "amount": 100 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "physical", "base": 210, "bonusAdRatio": 1.2 }
+        ]
+      },
+      "presentation": { "animationSlot": "r", "voiceSlot": "r" }
+    }
+  ]
+}

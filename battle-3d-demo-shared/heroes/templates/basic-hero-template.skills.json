@@ -1,0 +1,187 @@
+{
+  "heroId": "template_basic_hero",
+  "displayName": "基础英雄模板",
+  "skills": [
+    {
+      "skillId": "template_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 260,
+        "backswingMs": 180,
+        "range": 4,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 800
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 50,
+            "bonusAdRatio": 1
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "basicAttack",
+        "voiceSlot": "basicAttack"
+      }
+    },
+    {
+      "skillId": "template_q_skill",
+      "slot": "q",
+      "name": "Q 技能模板",
+      "tags": ["spell", "directional"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 220,
+        "backswingMs": 120,
+        "range": 8,
+        "width": 1.1,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 5000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 40
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "magic",
+            "base": 80,
+            "apRatio": 0.6
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "q",
+        "voiceSlot": "q"
+      }
+    },
+    {
+      "skillId": "template_w_skill",
+      "slot": "w",
+      "name": "W 技能模板",
+      "tags": ["spell", "self_cast", "buff"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 180,
+        "backswingMs": 100,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 12000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 60
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_move_speed_up",
+            "durationMs": 2000,
+            "target": "self"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "w",
+        "voiceSlot": "w"
+      }
+    },
+    {
+      "skillId": "template_e_skill",
+      "slot": "e",
+      "name": "E 技能模板",
+      "tags": ["spell", "target_point", "mobility"],
+      "cast": {
+        "type": "target_point",
+        "castTimeMs": 120,
+        "backswingMs": 90,
+        "range": 7,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 10000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 50
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Dash",
+            "dashType": "towards_point",
+            "speed": 18,
+            "maxDistance": 7
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "e",
+        "voiceSlot": "e"
+      }
+    },
+    {
+      "skillId": "template_r_skill",
+      "slot": "r",
+      "name": "R 技能模板",
+      "tags": ["spell", "target_point", "ultimate", "area"],
+      "cast": {
+        "type": "target_point",
+        "castTimeMs": 300,
+        "backswingMs": 200,
+        "range": 12,
+        "radius": 3,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 60000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 100
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "magic",
+            "base": 200,
+            "apRatio": 0.7
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "r",
+        "voiceSlot": "r"
+      }
+    }
+  ]
+}

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸鱼大乱斗 - 房间</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background: linear-gradient(180deg, #1A1025 0%, #1E1433 50%, #1A1025 100%);
+      color: var(--text-on-dark);
+    }
+
+    .main { padding: 90px 20px 40px; max-width: 1100px; margin: 0 auto; }
+
+    /* Header */
+    .room-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 32px; flex-wrap: wrap; gap: 12px;
+    }
+    .room-header-left { display: flex; align-items: center; gap: 16px; }
+    .room-back {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.08); display: flex;
+      align-items: center; justify-content: center;
+      transition: all var(--transition-fast); cursor: pointer;
+    }
+    .room-back:hover { background: rgba(255,107,53,0.2); }
+    .room-title-group {}
+    .room-name {
+      font-family: var(--font-display); font-size: 1.5rem; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .room-id {
+      font-size: 0.8rem; color: var(--text-on-dark-mid);
+      margin-top: 2px;
+    }
+    .room-header-right { display: flex; gap: 10px; }
+
+    /* Invite bar */
+    .invite-bar {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius-lg); padding: 14px 20px;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px;
+    }
+    .invite-bar-icon { font-size: 1.3rem; }
+    .invite-bar-text { flex: 1; font-size: 0.85rem; color: var(--text-on-dark-mid); }
+    .invite-bar-link {
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      background: rgba(255,255,255,0.06); font-size: 0.8rem;
+      color: var(--yellow); font-family: monospace; flex-shrink: 0;
+    }
+    .invite-bar-copy {
+      padding: 8px 18px; border-radius: var(--radius-full);
+      background: var(--primary); color: white; font-size: 0.8rem;
+      font-weight: 600; transition: all var(--transition-fast);
+    }
+    .invite-bar-copy:hover { background: var(--primary-light); }
+
+    /* VS Layout */
+    .vs-layout {
+      display: grid; grid-template-columns: 1fr auto 1fr; gap: 20px;
+      align-items: start; margin-bottom: 40px;
+    }
+
+    .team-panel {
+      border-radius: var(--radius-xl); padding: 24px;
+      position: relative;
+    }
+    .team-blue {
+      background: linear-gradient(135deg, rgba(96,165,250,0.1), rgba(96,165,250,0.03));
+      border: 2px solid rgba(96,165,250,0.2);
+    }
+    .team-red {
+      background: linear-gradient(135deg, rgba(248,113,113,0.1), rgba(248,113,113,0.03));
+      border: 2px solid rgba(248,113,113,0.2);
+    }
+    .team-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .team-name {
+      font-family: var(--font-display); font-size: 1.2rem; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .team-blue .team-name { color: var(--blue-team-light); }
+    .team-red .team-name { color: var(--red-team-light); }
+    .team-count {
+      font-size: 0.85rem; font-weight: 700; padding: 4px 14px;
+      border-radius: var(--radius-full);
+    }
+    .team-blue .team-count { background: rgba(96,165,250,0.15); color: var(--blue-team-light); }
+    .team-red .team-count { background: rgba(248,113,113,0.15); color: var(--red-team-light); }
+
+    .team-slots { display: flex; flex-direction: column; gap: 10px; }
+
+    .player-slot {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: all var(--transition-fast);
+    }
+    .player-slot:hover { background: rgba(255,255,255,0.06); }
+    .player-slot.is-me {
+      border-color: var(--yellow);
+      background: rgba(255,217,61,0.06);
+    }
+    .player-slot.empty {
+      border: 1px dashed rgba(255,255,255,0.12);
+      background: transparent; justify-content: center;
+      cursor: pointer;
+    }
+    .player-slot.empty:hover { border-color: rgba(255,255,255,0.25); background: rgba(255,255,255,0.03); }
+
+    .player-avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .team-blue .player-avatar { background: rgba(96,165,250,0.15); border: 2px solid rgba(96,165,250,0.3); }
+    .team-red .player-avatar { background: rgba(248,113,113,0.15); border: 2px solid rgba(248,113,113,0.3); }
+
+    .player-info { flex: 1; }
+    .player-name { font-weight: 600; font-size: 0.9rem; }
+    .player-tag { font-size: 0.72rem; color: var(--text-on-dark-mid); }
+    .player-ready {
+      padding: 4px 12px; border-radius: var(--radius-full);
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .ready-yes { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .ready-no { background: rgba(255,255,255,0.06); color: var(--text-on-dark-mid); }
+    .crown { font-size: 0.8rem; }
+
+    .empty-text { font-size: 0.85rem; color: var(--text-on-dark-mid); }
+
+    /* VS Divider */
+    .vs-divider {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; padding-top: 80px;
+    }
+    .vs-badge {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--pink));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-size: 1.5rem;
+      font-weight: 700; color: white;
+      box-shadow: 0 4px 30px rgba(255,107,53,0.4);
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    .vs-line {
+      width: 2px; flex: 1; min-height: 100px;
+      background: linear-gradient(180deg, var(--primary), transparent);
+      margin-top: 12px;
+    }
+
+    /* Bottom Actions */
+    .room-actions {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .btn-ready {
+      padding: 16px 48px; border-radius: var(--radius-full);
+      font-family: var(--font-display); font-size: 1.15rem;
+      font-weight: 700; transition: all var(--transition-normal);
+    }
+    .btn-ready-go {
+      background: linear-gradient(135deg, var(--success), #22c55e);
+      color: white; box-shadow: 0 4px 24px rgba(74,222,128,0.4);
+    }
+    .btn-ready-go:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(74,222,128,0.5); }
+    .btn-ready-cancel {
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-on-dark);
+    }
+    .btn-ready-cancel:hover { background: rgba(255,255,255,0.1); }
+    .btn-leave {
+      padding: 16px 32px; border-radius: var(--radius-full);
+      font-family: var(--font-display); font-size: 1rem;
+      font-weight: 600; background: rgba(248,113,113,0.12);
+      color: var(--red-team-light); transition: all var(--transition-fast);
+    }
+    .btn-leave:hover { background: rgba(248,113,113,0.2); }
+
+    /* Countdown Overlay */
+    .countdown-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(12px);
+      display: none; align-items: center; justify-content: center;
+      flex-direction: column;
+    }
+    .countdown-overlay.show { display: flex; }
+    .countdown-number {
+      font-family: var(--font-display); font-size: 8rem;
+      font-weight: 700; color: var(--yellow);
+      text-shadow: 0 4px 40px rgba(255,217,61,0.5);
+      animation: bounceIn 0.5s ease;
+    }
+    .countdown-text {
+      font-size: 1.3rem; color: var(--text-on-dark-mid);
+      margin-top: 16px;
+    }
+
+    /* Chat */
+    .room-chat {
+      margin-top: 32px;
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-xl); padding: 20px;
+    }
+    .chat-title {
+      font-family: var(--font-display); font-weight: 600; font-size: 0.95rem;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .chat-messages {
+      height: 120px; overflow-y: auto; margin-bottom: 12px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .chat-msg {
+      font-size: 0.82rem; color: var(--text-on-dark-mid);
+    }
+    .chat-msg .name { font-weight: 600; color: var(--yellow); }
+    .chat-msg.system { color: var(--text-on-dark-mid); font-style: italic; font-size: 0.78rem; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input-row input {
+      flex: 1; padding: 10px 16px; border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text-on-dark); font-size: 0.85rem; outline: none;
+      font-family: var(--font-body);
+    }
+    .chat-input-row input:focus { border-color: var(--primary); }
+    .chat-input-row button {
+      padding: 10px 20px; border-radius: var(--radius-full);
+      background: var(--primary); color: white; font-size: 0.85rem;
+      font-weight: 600; transition: all var(--transition-fast);
+    }
+
+    @media (max-width: 768px) {
+      .vs-layout { grid-template-columns: 1fr; }
+      .vs-divider { flex-direction: row; padding: 0; gap: 12px; }
+      .vs-badge { width: 48px; height: 48px; font-size: 1rem; }
+      .vs-line { width: auto; height: 2px; min-height: auto; min-width: 30px;
+        background: linear-gradient(90deg, transparent, var(--primary), transparent); margin: 0; }
+      .invite-bar { flex-wrap: wrap; }
+      .invite-bar-link { width: 100%; order: 3; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="page-nav" style="background: rgba(26,16,37,0.85); border-color: rgba(255,107,53,0.12);">
+    <a href="02-lobby.html" class="page-nav-logo" style="color: var(--primary);">
+      <span>🐡</span> 摸鱼大乱斗
+    </a>
+    <div class="page-nav-links">
+      <a href="01-home.html" style="color: rgba(245,230,216,0.5);">首页</a>
+      <a href="02-lobby.html" style="color: rgba(245,230,216,0.5);">大厅</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- Header -->
+    <div class="room-header">
+      <div class="room-header-left">
+        <div class="room-back" onclick="location.href='02-lobby.html'">←</div>
+        <div class="room-title-group">
+          <div class="room-name">🐟 摸鱼快乐屋</div>
+          <div class="room-id">房间号: #A3F7 · 经典大乱斗</div>
+        </div>
+      </div>
+      <div class="room-header-right">
+        <button class="btn btn-ghost btn-sm" style="color:var(--text-on-dark-mid);background:rgba(255,255,255,0.06);">设置</button>
+      </div>
+    </div>
+
+    <!-- Invite Bar -->
+    <div class="invite-bar">
+      <span class="invite-bar-icon">🔗</span>
+      <span class="invite-bar-text">分享邀请链接，让好友加入对战：</span>
+      <span class="invite-bar-link">moyu.com/game/battle?room=A3F7&invite=x7k2m9</span>
+      <button class="invite-bar-copy" id="copyBtn">复制链接</button>
+    </div>
+
+    <!-- VS Layout -->
+    <div class="vs-layout">
+      <!-- Blue Team -->
+      <div class="team-panel team-blue">
+        <div class="team-header">
+          <div class="team-name">💙 蓝队</div>
+          <div class="team-count">4 / 5</div>
+        </div>
+        <div class="team-slots">
+          <div class="player-slot is-me">
+            <div class="player-avatar">🐱</div>
+            <div class="player-info">
+              <div class="player-name">摸鱼达人（我）<span class="crown">👑</span></div>
+              <div class="player-tag">Lv.23 · 胜率 58%</div>
+            </div>
+            <span class="player-ready ready-yes">已准备</span>
+          </div>
+          <div class="player-slot">
+            <div class="player-avatar">🐶</div>
+            <div class="player-info">
+              <div class="player-name">咸鱼翻身</div>
+              <div class="player-tag">Lv.18 · 胜率 52%</div>
+            </div>
+            <span class="player-ready ready-yes">已准备</span>
+          </div>
+          <div class="player-slot">
+            <div class="player-avatar">🐰</div>
+            <div class="player-info">
+              <div class="player-name">代码写累了</div>
+              <div class="player-tag">Lv.31 · 胜率 65%</div>
+            </div>
+            <span class="player-ready ready-no">未准备</span>
+          </div>
+          <div class="player-slot">
+            <div class="player-avatar">🦊</div>
+            <div class="player-info">
+              <div class="player-name">产品经理别改了</div>
+              <div class="player-tag">Lv.15 · 胜率 47%</div>
+            </div>
+            <span class="player-ready ready-yes">已准备</span>
+          </div>
+          <div class="player-slot empty">
+            <span class="empty-text">+ 等待玩家加入...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VS -->
+      <div class="vs-divider">
+        <div class="vs-badge">VS</div>
+        <div class="vs-line"></div>
+      </div>
+
+      <!-- Red Team -->
+      <div class="team-panel team-red">
+        <div class="team-header">
+          <div class="team-name">❤️ 红队</div>
+          <div class="team-count">3 / 5</div>
+        </div>
+        <div class="team-slots">
+          <div class="player-slot">
+            <div class="player-avatar">🐼</div>
+            <div class="player-info">
+              <div class="player-name">Bug制造机</div>
+              <div class="player-tag">Lv.27 · 胜率 55%</div>
+            </div>
+            <span class="player-ready ready-yes">已准备</span>
+          </div>
+          <div class="player-slot">
+            <div class="player-avatar">🐸</div>
+            <div class="player-info">
+              <div class="player-name">不想上班</div>
+              <div class="player-tag">Lv.20 · 胜率 50%</div>
+            </div>
+            <span class="player-ready ready-no">未准备</span>
+          </div>
+          <div class="player-slot">
+            <div class="player-avatar">🐯</div>
+            <div class="player-info">
+              <div class="player-name">运营狗的日常</div>
+              <div class="player-tag">Lv.12 · 胜率 44%</div>
+            </div>
+            <span class="player-ready ready-yes">已准备</span>
+          </div>
+          <div class="player-slot empty">
+            <span class="empty-text">+ 等待玩家加入...</span>
+          </div>
+          <div class="player-slot empty">
+            <span class="empty-text">+ 等待玩家加入...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="room-actions">
+      <button class="btn-leave" onclick="location.href='02-lobby.html'">离开房间</button>
+      <button class="btn-ready btn-ready-cancel">取消准备</button>
+      <button class="btn-ready btn-ready-go" id="readyBtn">准备就绪!</button>
+    </div>
+
+    <!-- Chat -->
+    <div class="room-chat">
+      <div class="chat-title">💬 房间聊天</div>
+      <div class="chat-messages">
+        <div class="chat-msg system">系统：摸鱼达人 加入了蓝队</div>
+        <div class="chat-msg"><span class="name">咸鱼翻身：</span>大家好！一起摸鱼</div>
+        <div class="chat-msg"><span class="name">代码写累了：</span>再等两个人就能开了</div>
+        <div class="chat-msg system">系统：运营狗的日常 加入了红队</div>
+        <div class="chat-msg"><span class="name">Bug制造机：</span>快邀请人啊，我要开团了</div>
+        <div class="chat-msg"><span class="name">摸鱼达人：</span>已经发链接了 稍等！</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" placeholder="说点什么...">
+        <button>发送</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-number" id="countdownNum">5</div>
+    <div class="countdown-text">对战即将开始！准备好你的键盘和鼠标</div>
+  </div>
+
+  <script>
+    // Copy link
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      this.textContent = '已复制!';
+      this.style.background = 'var(--success)';
+      setTimeout(() => {
+        this.textContent = '复制链接';
+        this.style.background = '';
+      }, 2000);
+    });
+
+    // Ready button -> show countdown
+    document.getElementById('readyBtn').addEventListener('click', function() {
+      const overlay = document.getElementById('countdownOverlay');
+      const numEl = document.getElementById('countdownNum');
+      overlay.classList.add('show');
+      let count = 5;
+      numEl.textContent = count;
+      const timer = setInterval(() => {
+        count--;
+        if (count <= 0) {
+          clearInterval(timer);
+          location.href = '04-loading.html';
+        } else {
+          numEl.textContent = count;
+          numEl.style.animation = 'none';
+          numEl.offsetHeight;
+          numEl.style.animation = 'bounceIn 0.5s ease';
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

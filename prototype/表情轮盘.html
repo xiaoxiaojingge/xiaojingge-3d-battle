@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>英雄联盟极地大乱斗 - 表情轮盘3D原型 | Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Beaufort for LOL', 'Segoe UI', 'Arial', sans-serif;
+            cursor: crosshair;
+        }
+        
+        /* 提示信息 */
+        #info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 18px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
+            pointer-events: none;
+            z-index: 10;
+            font-size: 14px;
+            border-left: 4px solid #00a8ff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-weight: bold;
+        }
+        
+        #info kbd {
+            background: #2c3e66;
+            padding: 2px 6px;
+            border-radius: 6px;
+            font-weight: bold;
+            color: #ffd966;
+            margin: 0 4px;
+        }
+        
+        /* 表情反馈漂浮层 (2D特效) */
+        .emote-feedback {
+            position: absolute;
+            pointer-events: none;
+            font-size: 48px;
+            filter: drop-shadow(0 0 10px rgba(0,0,0,0.5));
+            animation: floatUp 1s ease-out forwards;
+            z-index: 200;
+            font-family: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+        }
+        
+        @keyframes floatUp {
+            0% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -120px) scale(1.2);
+            }
+        }
+        
+        /* 控制说明辅助 */
+        #controls-note {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.7);
+            background: rgba(0,0,0,0.5);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            pointer-events: none;
+            font-family: monospace;
+            backdrop-filter: blur(4px);
+        }
+        
+        /* 禁用右键菜单 (避免干扰) */
+        canvas {
+            outline: none;
+        }
+        
+        /* 轮盘Canvas容器 - 始终在最上层 */
+        .wheel-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        #emoteWheelCanvas {
+            position: absolute;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(210, 180, 140, 0.6), 0 0 0 8px rgba(0,0,0,0.3), 0 10px 30px rgba(0,0,0,0.5);
+            transition: opacity 0.1s;
+            pointer-events: auto;
+            filter: drop-shadow(0 0 12px #00aaff66);
+            opacity: 0;
+            transform: scale(0.9);
+            transition: opacity 0.15s ease, transform 0.15s ease;
+        }
+        
+        #emoteWheelCanvas.visible {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        
+        /* 极地装饰文字 */
+        .frost-tip {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            color: #aaf0ff;
+            text-shadow: 0 0 5px #0066aa;
+            font-size: 12px;
+            background: rgba(0,0,0,0.4);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-style: italic;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="info">
+        🎮 极地大乱斗 · 魄罗伙伴 | 按住 <kbd>空格</kbd> 呼出表情轮盘 → 移动鼠标选择 → 松开 <kbd>空格</kbd> 发送表情
+    </div>
+    <div id="controls-note">
+        🖱️ 鼠标拖拽旋转视角 | ✨ 冰雪纷飞 | 魄罗会回应你的表情
+    </div>
+    <div class="frost-tip">
+        ❄️ 弗雷尔卓德之心 · 轮盘表情 ❄️
+    </div>
+    <div class="wheel-container">
+        <canvas id="emoteWheelCanvas" width="240" height="240"></canvas>
+    </div>
+
+    <!-- 引入Three.js核心库以及扩展 -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.128.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.128.0/examples/jsm/"
+            }
+        }
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+        import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+
+        // ---------- 1. 初始化 Three 场景 ----------
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x071a3b); // 深邃极夜蓝
+        scene.fog = new THREE.FogExp2(0x071a3b, 0.008); // 雾效增加寒意
+
+        // 相机: 透视相机，位置稍高俯视
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(5, 3, 8);
+        camera.lookAt(0, 0.5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true; // 开启阴影增强质感
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // CSS2渲染文字特效
+        const labelRenderer = new CSS2DRenderer();
+        labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        labelRenderer.domElement.style.position = 'absolute';
+        labelRenderer.domElement.style.top = '0px';
+        labelRenderer.domElement.style.left = '0px';
+        labelRenderer.domElement.style.pointerEvents = 'none';
+        document.body.appendChild(labelRenderer.domElement);
+
+        // 轨道控制 (允许右键旋转，但与空格键不冲突)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.autoRotate = false;
+        controls.enableZoom = true;
+        controls.zoomSpeed = 1.2;
+        controls.rotateSpeed = 1.0;
+        controls.target.set(0, 0.8, 0);
+
+        // ---------- 2. 灯光系统 (营造极地冷色调 + 温暖补光) ----------
+        // 环境光
+        const ambientLight = new THREE.AmbientLight(0x2c3e66, 0.65);
+        scene.add(ambientLight);
+        // 主光源方向光 (冷白)
+        const dirLight = new THREE.DirectionalLight(0xcad9ff, 1.2);
+        dirLight.position.set(4, 8, 3);
+        dirLight.castShadow = true;
+        dirLight.receiveShadow = true;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 12;
+        dirLight.shadow.camera.left = -5;
+        dirLight.shadow.camera.right = 5;
+        dirLight.shadow.camera.top = 5;
+        dirLight.shadow.camera.bottom = -5;
+        scene.add(dirLight);
+        // 补光暖色从底部
+        const fillLight = new THREE.PointLight(0xffaa66, 0.4);
+        fillLight.position.set(0, -1, 1);
+        scene.add(fillLight);
+        // 背光冷色强调轮廓
+        const backLight = new THREE.PointLight(0x88aaff, 0.5);
+        backLight.position.set(-2, 2, -3);
+        scene.add(backLight);
+        // 动态闪烁的极光效果点光源
+        const auroraLight = new THREE.PointLight(0x66ccff, 0.6);
+        auroraLight.position.set(1, 2, 2);
+        scene.add(auroraLight);
+
+        // 辅助地面网格 (半透明冰面质感)
+        const gridHelper = new THREE.GridHelper(20, 20, 0x88aaff, 0x335588);
+        gridHelper.position.y = -0.4;
+        gridHelper.material.transparent = true;
+        gridHelper.material.opacity = 0.35;
+        scene.add(gridHelper);
+        
+        // 冰面地面 (半透光滑平面)
+        const icePlaneMat = new THREE.MeshStandardMaterial({ color: 0xaaffff, roughness: 0.25, metalness: 0.7, transparent: true, opacity: 0.65 });
+        const iceGround = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), icePlaneMat);
+        iceGround.rotation.x = -Math.PI / 2;
+        iceGround.position.y = -0.45;
+        iceGround.receiveShadow = true;
+        scene.add(iceGround);
+        
+        // 增加一些冰柱/冰块装饰
+        const iceCrystalMat = new THREE.MeshStandardMaterial({ color: 0xb5ffff, emissive: 0x2266aa, emissiveIntensity: 0.15, roughness: 0.2 });
+        for (let i = 0; i < 30; i++) {
+            const size = 0.15 + Math.random() * 0.25;
+            const crystal = new THREE.Mesh(new THREE.CylinderGeometry(size * 0.7, size, size * 1.5, 5), iceCrystalMat);
+            const angle = Math.random() * Math.PI * 2;
+            const rad = 3.5 + Math.random() * 2.5;
+            crystal.position.x = Math.cos(angle) * rad;
+            crystal.position.z = Math.sin(angle) * rad;
+            crystal.position.y = -0.4 + size * 0.6;
+            crystal.castShadow = true;
+            crystal.receiveShadow = false;
+            scene.add(crystal);
+        }
+        
+        // 添加一些飘浮的雪花粒子系统
+        const snowGeometry = new THREE.BufferGeometry();
+        const snowCount = 800;
+        const snowPositions = new Float32Array(snowCount * 3);
+        for (let i = 0; i < snowCount; i++) {
+            snowPositions[i*3] = (Math.random() - 0.5) * 30;
+            snowPositions[i*3+1] = Math.random() * 8;
+            snowPositions[i*3+2] = (Math.random() - 0.5) * 20;
+        }
+        snowGeometry.setAttribute('position', new THREE.BufferAttribute(snowPositions, 3));
+        const snowMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05, transparent: true, opacity: 0.7 });
+        const snowParticles = new THREE.Points(snowGeometry, snowMat);
+        scene.add(snowParticles);
+        
+        // 极地拱门/冰桥风格 (简单环状装饰)
+        const ringGeo = new THREE.TorusGeometry(2.2, 0.08, 64, 200);
+        const ringMat = new THREE.MeshStandardMaterial({ color: 0x88ccff, emissive: 0x2266aa, emissiveIntensity: 0.3 });
+        const ring = new THREE.Mesh(ringGeo, ringMat);
+        ring.rotation.x = Math.PI / 2;
+        ring.position.y = 0.9;
+        ring.scale.set(1.2, 1.2, 0.8);
+        scene.add(ring);
+        
+        // 两侧冰柱旗杆装饰
+        const pillarMat = new THREE.MeshStandardMaterial({ color: 0xaaddff, roughness: 0.3 });
+        const addPillar = (x, z) => {
+            const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 1.4, 8), pillarMat);
+            pillar.position.set(x, -0.2, z);
+            pillar.castShadow = true;
+            scene.add(pillar);
+            const topGem = new THREE.Mesh(new THREE.SphereGeometry(0.12, 6, 6), new THREE.MeshStandardMaterial({ color: 0xffaa66, emissive: 0x442200 }));
+            topGem.position.set(x, 0.55, z);
+            scene.add(topGem);
+        };
+        addPillar(-3.2, -2.5);
+        addPillar(3.2, -2.5);
+        addPillar(-2.8, 2.8);
+        addPillar(2.8, 2.8);
+        
+        // ---------- 3. 创建可爱的魄罗模型 (极地吉祥物) ----------
+        const poroGroup = new THREE.Group();
+        // 身体
+        const bodyGeo = new THREE.SphereGeometry(0.65, 32, 32);
+        const furMat = new THREE.MeshStandardMaterial({ color: 0xf5e6d3, roughness: 0.4, emissive: 0x442200, emissiveIntensity: 0.05 });
+        const body = new THREE.Mesh(bodyGeo, furMat);
+        body.castShadow = true;
+        body.receiveShadow = true;
+        poroGroup.add(body);
+        // 耳朵 (两个圆锥)
+        const earMat = new THREE.MeshStandardMaterial({ color: 0xd2b48c });
+        const leftEar = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.7, 16), earMat);
+        leftEar.position.set(-0.55, 0.65, 0);
+        leftEar.rotation.z = -0.3;
+        leftEar.rotation.x = -0.2;
+        const rightEar = new THREE.Mesh(new THREE.ConeGeometry(0.45, 0.7, 16), earMat);
+        rightEar.position.set(0.55, 0.65, 0);
+        rightEar.rotation.z = 0.3;
+        rightEar.rotation.x = -0.2;
+        poroGroup.add(leftEar);
+        poroGroup.add(rightEar);
+        // 面部: 眼睛 + 鼻子
+        const eyeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
+        const leftEye = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 24), eyeMat);
+        leftEye.position.set(-0.27, 0.2, 0.68);
+        const rightEye = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 24), eyeMat);
+        rightEye.position.set(0.27, 0.2, 0.68);
+        poroGroup.add(leftEye);
+        poroGroup.add(rightEye);
+        // 高光
+        const glintMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const leftGlint = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 16), glintMat);
+        leftGlint.position.set(-0.32, 0.27, 0.82);
+        const rightGlint = new THREE.Mesh(new THREE.SphereGeometry(0.045, 16, 16), glintMat);
+        rightGlint.position.set(0.22, 0.27, 0.82);
+        poroGroup.add(leftGlint);
+        poroGroup.add(rightGlint);
+        // 粉红鼻子
+        const noseMat = new THREE.MeshStandardMaterial({ color: 0xff8888 });
+        const nose = new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 24), noseMat);
+        nose.position.set(0, 0.05, 0.78);
+        poroGroup.add(nose);
+        // 胡须 (细线条)
+        const whiskerMat = new THREE.LineBasicMaterial({ color: 0xaa8866 });
+        const addWhisker = (x, z, rotY) => {
+            const points = [];
+            points.push(new THREE.Vector3(0, 0, 0));
+            points.push(new THREE.Vector3(0.35, -0.05, 0.15));
+            const geom = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geom, whiskerMat);
+            line.position.set(x, 0.1, z);
+            line.rotation.y = rotY;
+            poroGroup.add(line);
+        };
+        addWhisker(-0.45, 0.65, -0.4);
+        addWhisker(0.45, 0.65, 0.4);
+        addWhisker(-0.48, 0.7, -0.2);
+        addWhisker(0.48, 0.7, 0.2);
+        
+        poroGroup.position.set(0, -0.15, 0);
+        poroGroup.castShadow = true;
+        poroGroup.receiveShadow = false;
+        scene.add(poroGroup);
+        
+        // 添加一个漂浮的 CSS2D 名字标签
+        const poroDiv = document.createElement('div');
+        poroDiv.textContent = '✨ 魄罗 ✨';
+        poroDiv.style.color = '#fff7e8';
+        poroDiv.style.fontSize = '14px';
+        poroDiv.style.fontWeight = 'bold';
+        poroDiv.style.textShadow = '1px 1px 0 #2266aa';
+        poroDiv.style.background = 'rgba(0,0,0,0.5)';
+        poroDiv.style.padding = '2px 10px';
+        poroDiv.style.borderRadius = '20px';
+        poroDiv.style.border = '1px solid #88ccff';
+        poroDiv.style.backdropFilter = 'blur(4px)';
+        const poroLabel = new CSS2DObject(poroDiv);
+        poroLabel.position.set(0, 1.1, 0);
+        poroGroup.add(poroLabel);
+        
+        // 简单动画: 魄罗呼吸感 (轻微缩放)
+        let breathTime = 0;
+        
+        // ---------- 4. 表情轮盘系统 (Canvas 2D 绘制，类似LOL轮盘) ----------
+        const wheelCanvas = document.getElementById('emoteWheelCanvas');
+        const ctx = wheelCanvas.getContext('2d');
+        const wheelSize = 240;
+        wheelCanvas.width = wheelSize;
+        wheelCanvas.height = wheelSize;
+        
+        // 表情数据: 8个 (极地主题 + 经典)
+        const emotes = [
+            { name: "魄罗之吻", emoji: "🐾", desc: "Poros!" },
+            { name: "大笑", emoji: "😄", desc: "哈哈哈" },
+            { name: "哭泣", emoji: "😭", desc: "呜呜呜" },
+            { name: "愤怒", emoji: "😠", desc: "生气!" },
+            { name: "点赞", emoji: "👍", desc: "好样的" },
+            { name: "爱心", emoji: "❤️", desc: "爱你" },
+            { name: "惊讶", emoji: "😲", desc: "哇!" },
+            { name: "调皮", emoji: "😜", desc: "略略略" }
+        ];
+        const segmentCount = emotes.length;
+        const angleStep = (Math.PI * 2) / segmentCount;
+        let currentHighlightIndex = -1; // 当前高亮扇区索引
+        let wheelVisible = false;
+        let wheelCenterX = 0, wheelCenterY = 0; // 轮盘中心屏幕坐标
+        let activeSpace = false; // 空格键是否按住
+        
+        // 绘制轮盘函数 (高亮索引)
+        function drawWheel(highlightIdx) {
+            ctx.clearRect(0, 0, wheelSize, wheelSize);
+            const center = wheelSize / 2;
+            const radius = wheelSize / 2 - 4;
+            
+            for (let i = 0; i < segmentCount; i++) {
+                const start = i * angleStep - Math.PI / 2; // 顶部为起始偏移，使得0号在上方
+                const end = start + angleStep;
+                const isHighlight = (i === highlightIdx);
+                
+                // 绘制扇形区域
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.arc(center, center, radius, start, end);
+                ctx.closePath();
+                
+                // 填充样式
+                if (isHighlight) {
+                    ctx.fillStyle = '#ffd966cc';
+                    ctx.shadowBlur = 12;
+                    ctx.shadowColor = '#ffaa33';
+                } else {
+                    ctx.fillStyle = 'rgba(30, 40, 70, 0.85)';
+                    ctx.shadowBlur = 4;
+                    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                }
+                ctx.fill();
+                ctx.strokeStyle = '#c9b28b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+                
+                // 绘制分隔线
+                ctx.beginPath();
+                ctx.moveTo(center, center);
+                ctx.lineTo(center + Math.cos(start) * radius, center + Math.sin(start) * radius);
+                ctx.strokeStyle = '#e6d5b8';
+                ctx.stroke();
+                
+                // 绘制表情 emoji 图标 (放在扇形中间靠外)
+                const midAngle = start + angleStep / 2;
+                const iconRadius = radius * 0.68;
+                const x = center + Math.cos(midAngle) * iconRadius;
+                const y = center + Math.sin(midAngle) * iconRadius;
+                ctx.font = `34px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji"`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowBlur = 2;
+                ctx.fillStyle = isHighlight ? '#2c1e0f' : '#f0f4ff';
+                ctx.fillText(emotes[i].emoji, x, y);
+                
+                // 小文字描述(简洁)
+                ctx.font = `10px "Beaufort for LOL", Arial`;
+                ctx.fillStyle = isHighlight ? '#ffefc0' : '#bbccff';
+                ctx.fillText(emotes[i].name.substring(0,4), x, y + 28);
+            }
+            
+            // 绘制内圆装饰
+            ctx.beginPath();
+            ctx.arc(center, center, radius * 0.3, 0, Math.PI * 2);
+            ctx.fillStyle = '#1e2a47cc';
+            ctx.fill();
+            ctx.strokeStyle = '#e6cba0';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.font = 'bold 16px "Beaufort for LOL"';
+            ctx.fillStyle = '#ffecb3';
+            ctx.fillText("表情", center, center + 5);
+            ctx.font = '10px monospace';
+            ctx.fillStyle = '#aaddff';
+            ctx.fillText("SPACE", center, center + 22);
+            ctx.shadowBlur = 0;
+        }
+        
+        // 根据鼠标坐标相对于轮盘中心计算高亮扇区索引
+        function getHighlightIndexFromMouse(clientX, clientY) {
+            if (!wheelVisible) return -1;
+            const rect = wheelCanvas.getBoundingClientRect();
+            const centerCanvasX = rect.left + rect.width / 2;
+            const centerCanvasY = rect.top + rect.height / 2;
+            const dx = clientX - centerCanvasX;
+            const dy = clientY - centerCanvasY;
+            const angle = Math.atan2(dy, dx); // -PI 到 PI
+            // 调整偏移使0号表情(魄罗之吻)位于正上方: 原本顶部角度为 -PI/2，我们需要让角度偏移使顶部对应索引0
+            let adjusted = angle + Math.PI / 2;
+            if (adjusted < 0) adjusted += Math.PI * 2;
+            const idx = Math.floor(adjusted / angleStep) % segmentCount;
+            // 检查距离是否超出半径限制 (避免中心区域误触)
+            const dist = Math.hypot(dx, dy);
+            const maxRadius = rect.width / 2;
+            if (dist > maxRadius * 0.85) return idx;
+            if (dist < maxRadius * 0.25) return -1; // 中心区域不算高亮
+            return idx;
+        }
+        
+        // 显示轮盘在指定屏幕坐标 (中心点)
+        function showWheel(clientX, clientY) {
+            wheelVisible = true;
+            wheelCanvas.classList.add('visible');
+            // 设置canvas位置 (使其中心位于鼠标坐标)
+            wheelCanvas.style.left = `${clientX - wheelSize/2}px`;
+            wheelCanvas.style.top = `${clientY - wheelSize/2}px`;
+            wheelCenterX = clientX;
+            wheelCenterY = clientY;
+            currentHighlightIndex = -1;
+            drawWheel(-1);
+        }
+        
+        function hideWheel() {
+            wheelVisible = false;
+            wheelCanvas.classList.remove('visible');
+            currentHighlightIndex = -1;
+        }
+        
+        // 触发表情动作: 在魄罗头上显示漂浮emoji + 场景闪烁效果
+        function triggerEmote(emoteIndex) {
+            if (emoteIndex < 0 || emoteIndex >= emotes.length) return;
+            const emote = emotes[emoteIndex];
+            // 创建漂浮div特效
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.className = 'emote-feedback';
+            feedbackDiv.textContent = emote.emoji;
+            // 获取魄罗在屏幕上的投影位置 (CSS2D跟随魄罗位置)
+            const vector = new THREE.Vector3(0, 1.2, 0);
+            vector.project(camera);
+            const x = (vector.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-vector.y * 0.5 + 0.5) * window.innerHeight;
+            feedbackDiv.style.left = `${x}px`;
+            feedbackDiv.style.top = `${y - 40}px`;
+            feedbackDiv.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(feedbackDiv);
+            setTimeout(() => {
+                feedbackDiv.remove();
+            }, 1000);
+            
+            // 魄罗做一个小跳跃/缩放反馈
+            poroGroup.userData = { jump: 0.2, startTime: performance.now() };
+            // 改变极光闪烁
+            auroraLight.intensity = 0.9;
+            setTimeout(() => { auroraLight.intensity = 0.5; }, 200);
+            // 控制台输出
+            console.log(`[表情] ${emote.name} ${emote.emoji} 发送给魄罗~`);
+        }
+        
+        // 根据当前高亮索引选择并触发
+        function selectCurrentEmote() {
+            if (currentHighlightIndex !== -1 && wheelVisible) {
+                triggerEmote(currentHighlightIndex);
+            }
+            hideWheel();
+            activeSpace = false;
+        }
+        
+        // ---------- 5. 键盘 & 鼠标事件 (空格键控制轮盘) ----------
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!activeSpace && !wheelVisible) {
+                    activeSpace = true;
+                    // 获取当前鼠标位置来显示轮盘
+                    const mouseX = (window.mouseX !== undefined) ? window.mouseX : window.innerWidth/2;
+                    const mouseY = (window.mouseY !== undefined) ? window.mouseY : window.innerHeight/2;
+                    showWheel(mouseX, mouseY);
+                }
+            }
+            // ESC 取消轮盘
+            if (e.code === 'Escape' && wheelVisible) {
+                hideWheel();
+                activeSpace = false;
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' && activeSpace) {
+                e.preventDefault();
+                selectCurrentEmote();
+            }
+        });
+        
+        // 全局鼠标移动时更新高亮 (如果轮盘可见)
+        window.addEventListener('mousemove', (e) => {
+            window.mouseX = e.clientX;
+            window.mouseY = e.clientY;
+            if (wheelVisible && activeSpace) {
+                const newIdx = getHighlightIndexFromMouse(e.clientX, e.clientY);
+                if (newIdx !== currentHighlightIndex) {
+                    currentHighlightIndex = newIdx;
+                    drawWheel(currentHighlightIndex);
+                }
+            }
+        });
+        
+        // 防止在canvas上右键弹出菜单，确保空格体验
+        wheelCanvas.addEventListener('contextmenu', (e) => e.preventDefault());
+        
+        // 窗口尺寸适配
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            labelRenderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        
+        // 额外: 魄罗跳跃动画
+        function updatePoroAnimation(time) {
+            if (poroGroup.userData && poroGroup.userData.jump) {
+                const elapsed = (time - poroGroup.userData.startTime) / 300; // 300ms动画
+                if (elapsed < 1) {
+                    const yOff = Math.sin(elapsed * Math.PI) * 0.2;
+                    poroGroup.position.y = -0.15 + yOff;
+                } else {
+                    poroGroup.position.y = -0.15;
+                    delete poroGroup.userData;
+                }
+            } else {
+                // 呼吸浮动
+                breathTime += 0.016;
+                const breath = Math.sin(breathTime * 1.8) * 0.008;
+                poroGroup.scale.setScalar(1 + breath);
+            }
+        }
+        
+        // 雪花飘落动画
+        let snowTime = 0;
+        function updateSnow() {
+            const positions = snowGeometry.attributes.position.array;
+            for (let i = 0; i < snowCount; i++) {
+                let y = positions[i*3+1];
+                y -= 0.008;
+                if (y < -0.5) {
+                    y = 5.5;
+                    positions[i*3] = (Math.random() - 0.5) * 18;
+                    positions[i*3+2] = (Math.random() - 0.5) * 16;
+                }
+                positions[i*3+1] = y;
+            }
+            snowGeometry.attributes.position.needsUpdate = true;
+        }
+        
+        // 极光颜色微动
+        let auroraHue = 0;
+        function updateAurora() {
+            auroraHue += 0.01;
+            const r = 0.4 + Math.sin(auroraHue) * 0.2;
+            const g = 0.6 + Math.cos(auroraHue * 0.7) * 0.2;
+            const b = 1.0;
+            auroraLight.color.setRGB(r, g, b);
+        }
+        
+        // ---------- 6. 动画循环 ----------
+        let lastTime = performance.now();
+        function animate() {
+            const now = performance.now();
+            const delta = Math.min(1/30, (now - lastTime) / 1000);
+            lastTime = now;
+            
+            updateSnow();
+            updateAurora();
+            updatePoroAnimation(now);
+            
+            // 控制相机更新
+            controls.update(); // 更新轨道
+            // 旋转雪花粒子缓缓飘移效果
+            snowParticles.rotation.y += 0.002;
+            
+            renderer.render(scene, camera);
+            labelRenderer.render(scene, camera);
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        // 初始绘制默认轮盘样式但不显示
+        drawWheel(-1);
+        
+        // 控制台输出启动
+        console.log('极地大乱斗场景已加载，按住空格键体验表情轮盘!');
+    </script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: battle-3d-demo-server
+
+server:
+  address: 0.0.0.0
+  port: 8130
+  servlet:
+    context-path: /api
+
+battle-server:
+  ws-port: 8131
+  ws-host: 0.0.0.0
+  default-room-id: demo-room
+  tick-interval-ms: 50
+  snapshot-interval-ms: 84
+  shared-root-path: ../battle-3d-demo-shared
+  ping-interval-ms: 10000
+  ping-timeout-ms: 30000
+  allowed-origins: ""

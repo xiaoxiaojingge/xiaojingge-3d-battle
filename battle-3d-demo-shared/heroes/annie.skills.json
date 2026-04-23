@@ -1,0 +1,126 @@
+{
+  "heroId": "annie",
+  "displayName": "安妮",
+  "skills": [
+    {
+      "skillId": "annie_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit", "magic"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 260,
+        "backswingMs": 160,
+        "range": 7,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 900 },
+      "cost": { "resourceType": "none", "amount": 0 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 50, "apRatio": 0.2 }
+        ]
+      },
+      "presentation": { "animationSlot": "basicAttack", "voiceSlot": "basicAttack" }
+    },
+    {
+      "skillId": "annie_q_disintegrate",
+      "slot": "q",
+      "name": "碎裂之火",
+      "tags": ["spell", "target_unit", "magic"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 180,
+        "backswingMs": 100,
+        "range": 7,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 4000 },
+      "cost": { "resourceType": "mana", "amount": 45 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 85, "apRatio": 0.7 }
+        ]
+      },
+      "presentation": { "animationSlot": "q", "voiceSlot": "q" }
+    },
+    {
+      "skillId": "annie_w_incinerate",
+      "slot": "w",
+      "name": "焚烧",
+      "tags": ["spell", "directional", "line", "magic"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 220,
+        "backswingMs": 120,
+        "range": 6,
+        "width": 3,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 8000 },
+      "cost": { "resourceType": "mana", "amount": 55 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 90, "apRatio": 0.75 }
+        ]
+      },
+      "presentation": { "animationSlot": "w", "voiceSlot": "w" }
+    },
+    {
+      "skillId": "annie_e_molten_shield",
+      "slot": "e",
+      "name": "熔岩护盾",
+      "tags": ["spell", "self_cast", "shield"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 120,
+        "backswingMs": 80,
+        "allowMoveDuringCast": false,
+        "lockMovement": false,
+        "interruptible": true
+      },
+      "cooldown": { "baseMs": 12000 },
+      "cost": { "resourceType": "mana", "amount": 40 },
+      "effects": {
+        "onActivate": [
+          { "type": "Shield", "base": 120, "target": "self" }
+        ]
+      },
+      "presentation": { "animationSlot": "e", "voiceSlot": "e" }
+    },
+    {
+      "skillId": "annie_r_summon_tibbers",
+      "slot": "r",
+      "name": "提伯斯之怒",
+      "tags": ["spell", "target_point", "area", "ultimate", "magic"],
+      "cast": {
+        "type": "target_point",
+        "castTimeMs": 260,
+        "backswingMs": 180,
+        "range": 8,
+        "radius": 3,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": { "enemyOnly": true, "allowSelf": false }
+      },
+      "cooldown": { "baseMs": 70000 },
+      "cost": { "resourceType": "mana", "amount": 100 },
+      "effects": {
+        "onImpact": [
+          { "type": "Damage", "damageType": "magic", "base": 210, "apRatio": 0.75 }
+        ]
+      },
+      "presentation": { "animationSlot": "r", "voiceSlot": "r" }
+    }
+  ]
+}

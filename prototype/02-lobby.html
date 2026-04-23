@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>摸鱼大乱斗 - 游戏大厅</title>
+  <link rel="stylesheet" href="css/common.css">
+  <style>
+    body {
+      min-height: 100vh;
+      background: var(--bg-warm);
+    }
+
+    .main { padding: 90px 20px 40px; max-width: 1200px; margin: 0 auto; }
+
+    /* --- Header --- */
+    .lobby-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 28px; flex-wrap: wrap; gap: 16px;
+    }
+    .lobby-title {
+      font-size: 1.8rem; font-weight: 700; color: var(--text-dark);
+      display: flex; align-items: center; gap: 12px;
+    }
+    .lobby-title span { font-size: 2rem; }
+    .lobby-actions { display: flex; gap: 12px; }
+
+    /* --- Search & Filter Bar --- */
+    .filter-bar {
+      display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
+    }
+    .search-box {
+      flex: 1; min-width: 200px; position: relative;
+    }
+    .search-box input {
+      width: 100%; padding: 12px 18px 12px 44px;
+      border: 2px solid #F0E0D6; border-radius: var(--radius-full);
+      font-family: var(--font-body); font-size: 0.9rem;
+      background: white; color: var(--text-dark); outline: none;
+      transition: all var(--transition-fast);
+    }
+    .search-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255,107,53,0.1); }
+    .search-box::before {
+      content: '🔍'; position: absolute; left: 16px; top: 50%;
+      transform: translateY(-50%); font-size: 1rem;
+    }
+    .filter-chip {
+      padding: 10px 20px; border-radius: var(--radius-full);
+      border: 2px solid #F0E0D6; background: white;
+      font-family: var(--font-display); font-size: 0.85rem;
+      font-weight: 600; color: var(--text-mid);
+      cursor: pointer; transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .filter-chip:hover, .filter-chip.active {
+      border-color: var(--primary); background: rgba(255,107,53,0.08);
+      color: var(--primary);
+    }
+
+    /* --- Layout --- */
+    .lobby-layout {
+      display: grid; grid-template-columns: 1fr 320px; gap: 24px;
+    }
+
+    /* --- Room List --- */
+    .room-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .room-card {
+      background: white; border-radius: var(--radius-lg);
+      padding: 20px 24px; display: flex; align-items: center; gap: 16px;
+      border: 2px solid transparent; box-shadow: var(--shadow-sm);
+      transition: all var(--transition-normal); cursor: pointer;
+    }
+    .room-card:hover {
+      border-color: rgba(255,107,53,0.2); box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+    .room-card-icon {
+      width: 52px; height: 52px; border-radius: var(--radius-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+    }
+    .room-card-info { flex: 1; min-width: 0; }
+    .room-card-name {
+      font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .room-card-meta {
+      font-size: 0.8rem; color: var(--text-light);
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    }
+    .room-card-players {
+      display: flex; align-items: center; gap: 6px;
+      font-weight: 700; font-size: 0.95rem;
+    }
+    .room-card-players .current { color: var(--primary); }
+    .room-card-players .max { color: var(--text-light); }
+    .room-card-status {
+      padding: 4px 12px; border-radius: var(--radius-full);
+      font-size: 0.72rem; font-weight: 700; font-family: var(--font-display);
+    }
+    .status-waiting { background: rgba(74,222,128,0.12); color: #16a34a; }
+    .status-countdown { background: rgba(255,217,61,0.15); color: #d97706; }
+    .status-playing { background: rgba(248,113,113,0.12); color: #dc2626; }
+    .status-full { background: rgba(156,163,175,0.12); color: #6b7280; }
+
+    .room-card-join {
+      padding: 8px 20px; border-radius: var(--radius-full);
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      color: white; font-family: var(--font-display); font-weight: 600;
+      font-size: 0.85rem; transition: all var(--transition-fast);
+      white-space: nowrap;
+    }
+    .room-card-join:hover { box-shadow: var(--shadow-glow-primary); transform: scale(1.05); }
+    .room-card-join.disabled {
+      background: #ddd; color: #999; pointer-events: none;
+    }
+
+    /* Waiting/Countdown room icon bg */
+    .room-card.waiting .room-card-icon { background: rgba(74,222,128,0.1); }
+    .room-card.countdown .room-card-icon { background: rgba(255,217,61,0.1); }
+    .room-card.playing .room-card-icon { background: rgba(248,113,113,0.1); }
+
+    /* --- Sidebar --- */
+    .sidebar { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Quick Match Card */
+    .quick-match {
+      background: linear-gradient(135deg, var(--primary), var(--pink));
+      border-radius: var(--radius-xl); padding: 28px 24px;
+      color: white; text-align: center;
+      box-shadow: var(--shadow-glow-primary);
+      position: relative; overflow: hidden;
+    }
+    .quick-match::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15), transparent 60%);
+    }
+    .quick-match-icon { font-size: 2.5rem; margin-bottom: 12px; position: relative; }
+    .quick-match-title {
+      font-family: var(--font-display); font-size: 1.2rem; font-weight: 700;
+      margin-bottom: 8px; position: relative;
+    }
+    .quick-match-desc {
+      font-size: 0.85rem; opacity: 0.85; margin-bottom: 20px; position: relative;
+    }
+    .quick-match-btn {
+      padding: 14px 36px; border-radius: var(--radius-full);
+      background: white; color: var(--primary); font-family: var(--font-display);
+      font-weight: 700; font-size: 1rem; transition: all var(--transition-normal);
+      position: relative; display: inline-block;
+    }
+    .quick-match-btn:hover { transform: scale(1.05); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+
+    /* Online Players */
+    .online-card {
+      background: white; border-radius: var(--radius-xl);
+      padding: 20px; box-shadow: var(--shadow-sm);
+      border: 2px solid rgba(255,107,53,0.06);
+    }
+    .online-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .online-title {
+      font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .online-count {
+      font-size: 0.75rem; padding: 2px 10px; border-radius: var(--radius-full);
+      background: rgba(74,222,128,0.12); color: #16a34a; font-weight: 700;
+    }
+    .online-list { display: flex; flex-direction: column; gap: 10px; }
+    .online-user {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 10px; border-radius: var(--radius-md);
+      transition: background var(--transition-fast); cursor: pointer;
+    }
+    .online-user:hover { background: var(--bg-warm); }
+    .online-user-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; border: 2px solid var(--yellow-light);
+      background: var(--bg-cream);
+    }
+    .online-user-info { flex: 1; }
+    .online-user-name { font-weight: 600; font-size: 0.85rem; }
+    .online-user-status { font-size: 0.72rem; color: var(--text-light); }
+    .online-user-invite {
+      padding: 4px 12px; border-radius: var(--radius-full);
+      background: rgba(255,107,53,0.08); color: var(--primary);
+      font-size: 0.72rem; font-weight: 600; transition: all var(--transition-fast);
+    }
+    .online-user-invite:hover { background: var(--primary); color: white; }
+
+    /* Stats Mini */
+    .stats-mini {
+      background: white; border-radius: var(--radius-xl);
+      padding: 20px; box-shadow: var(--shadow-sm);
+      border: 2px solid rgba(255,107,53,0.06);
+    }
+    .stats-mini-title {
+      font-family: var(--font-display); font-weight: 700; font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .stats-mini-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+    }
+    .stats-mini-item {
+      text-align: center; padding: 12px;
+      background: var(--bg-warm); border-radius: var(--radius-md);
+    }
+    .stats-mini-val {
+      font-family: var(--font-display); font-size: 1.4rem; font-weight: 700;
+      color: var(--primary);
+    }
+    .stats-mini-label { font-size: 0.72rem; color: var(--text-light); margin-top: 2px; }
+
+    /* --- Create Room Modal --- */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px); z-index: 200;
+      display: none; align-items: center; justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white; border-radius: var(--radius-xl);
+      padding: 36px; max-width: 480px; width: 100%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--bg-warm); display: flex;
+      align-items: center; justify-content: center;
+      font-size: 1.1rem; cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .modal-close:hover { background: rgba(255,107,53,0.1); }
+    .modal-icon { font-size: 2.5rem; margin-bottom: 16px; text-align: center; }
+    .modal-title {
+      font-family: var(--font-display); font-size: 1.4rem; font-weight: 700;
+      text-align: center; margin-bottom: 8px;
+    }
+    .modal-desc {
+      text-align: center; color: var(--text-mid); font-size: 0.9rem;
+      margin-bottom: 28px;
+    }
+    .form-group { margin-bottom: 20px; }
+    .form-label {
+      display: block; font-family: var(--font-display); font-weight: 600;
+      font-size: 0.9rem; margin-bottom: 6px; color: var(--text-dark);
+    }
+    .form-row { display: flex; gap: 12px; }
+    .form-row .form-group { flex: 1; }
+    .modal-footer { display: flex; gap: 12px; margin-top: 8px; }
+    .modal-footer .btn { flex: 1; }
+
+    /* --- Responsive --- */
+    @media (max-width: 1024px) {
+      .lobby-layout { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+      .quick-match { text-align: center; }
+    }
+    @media (max-width: 768px) {
+      .main { padding: 80px 12px 30px; }
+      .lobby-header { margin-bottom: 20px; }
+      .lobby-title { font-size: 1.4rem; }
+      .filter-bar { gap: 8px; }
+      .room-card { padding: 14px 16px; flex-wrap: wrap; }
+      .room-card-join { width: 100%; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .stats-mini-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="page-nav">
+    <a href="01-home.html" class="page-nav-logo">
+      <span>🐡</span> 摸鱼大乱斗
+    </a>
+    <div class="page-nav-links">
+      <a href="01-home.html">首页</a>
+      <a href="#" class="active">大厅</a>
+      <a href="07-profile.html">数据</a>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- Header -->
+    <div class="lobby-header">
+      <h1 class="lobby-title"><span>🎮</span> 游戏大厅</h1>
+      <div class="lobby-actions">
+        <button class="btn btn-outline btn-sm" id="refreshBtn">刷新列表</button>
+        <button class="btn btn-primary" id="createBtn">+ 创建房间</button>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="filter-bar">
+      <div class="search-box">
+        <input type="text" placeholder="搜索房间号或房间名...">
+      </div>
+      <button class="filter-chip active">全部</button>
+      <button class="filter-chip">等待中</button>
+      <button class="filter-chip">即将开始</button>
+      <button class="filter-chip">空位多</button>
+    </div>
+
+    <!-- Layout -->
+    <div class="lobby-layout">
+      <!-- Room List -->
+      <div class="room-list">
+
+        <div class="room-card waiting" onclick="location.href='03-room.html'">
+          <div class="room-card-icon">🐟</div>
+          <div class="room-card-info">
+            <div class="room-card-name">
+              摸鱼快乐屋
+              <span class="room-card-status status-waiting">等待中</span>
+            </div>
+            <div class="room-card-meta">
+              <span>房间号: #A3F7</span>
+              <span>房主: 咸鱼翻身</span>
+            </div>
+          </div>
+          <div class="room-card-players">
+            <span class="current">7</span><span class="max">/ 10</span>
+          </div>
+          <button class="room-card-join">加入</button>
+        </div>
+
+        <div class="room-card countdown">
+          <div class="room-card-icon">⚡</div>
+          <div class="room-card-info">
+            <div class="room-card-name">
+              午休激战局
+              <span class="room-card-status status-countdown">5s后开始</span>
+            </div>
+            <div class="room-card-meta">
+              <span>房间号: #B2K9</span>
+              <span>房主: 不想上班</span>
+            </div>
+          </div>
+          <div class="room-card-players">
+            <span class="current">10</span><span class="max">/ 10</span>
+          </div>
+          <button class="room-card-join disabled">已满</button>
+        </div>
+
+        <div class="room-card waiting" onclick="location.href='03-room.html'">
+          <div class="room-card-icon">🎯</div>
+          <div class="room-card-info">
+            <div class="room-card-name">
+              前端组内战
+              <span class="room-card-status status-waiting">等待中</span>
+            </div>
+            <div class="room-card-meta">
+              <span>房间号: #C8D2</span>
+              <span>房主: React大师</span>
+            </div>
+          </div>
+          <div class="room-card-players">
+            <span class="current">4</span><span class="max">/ 10</span>
+          </div>
+          <button class="room-card-join">加入</button>
+        </div>
+
+        <div class="room-card playing">
+          <div class="room-card-icon">⚔️</div>
+          <div class="room-card-info">
+            <div class="room-card-name">
+              高手过招
+              <span class="room-card-status status-playing">对战中</span>
+            </div>
+            <div class="room-card-meta">
+              <span>房间号: #D1E5</span>
+              <span>已进行 4:32</span>
+            </div>
+          </div>
+          <div class="room-card-players">
+            <span class="current">10</span><span class="max">/ 10</span>
+          </div>
+          <button class="room-card-join disabled">对战中</button>
+        </div>
+
+        <div class="room-card waiting" onclick="location.href='03-room.html'">
+          <div class="room-card-icon">🌟</div>
+          <div class="room-card-info">
+            <div class="room-card-name">
+              下班前来一局
+              <span class="room-card-status status-waiting">等待中</span>
+            </div>
+            <div class="room-card-meta">
+              <span>房间号: #E4F1</span>
+              <span>房主: 打工人</span>
+            </div>
+          </div>
+          <div class="room-card-players">
+            <span class="current">2</span><span class="max">/ 10</span>
+          </div>
+          <button class="room-card-join">加入</button>
+        </div>
+
+        <div class="room-card waiting" onclick="location.href='03-room.html'">
+          <div class="room-card-icon">🐠</div>
+          <div class="room-card-info">
+            <div class="room-card-name">
+              佛系摸鱼
+              <span class="room-card-status status-waiting">等待中</span>
+            </div>
+            <div class="room-card-meta">
+              <span>房间号: #F7G3</span>
+              <span>房主: 躺平高手</span>
+            </div>
+          </div>
+          <div class="room-card-players">
+            <span class="current">6</span><span class="max">/ 10</span>
+          </div>
+          <button class="room-card-join">加入</button>
+        </div>
+
+      </div>
+
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <!-- Quick Match -->
+        <div class="quick-match">
+          <div class="quick-match-icon">🚀</div>
+          <div class="quick-match-title">快速匹配</div>
+          <div class="quick-match-desc">自动加入可用房间<br>45秒无人? AI补位即开!</div>
+          <button class="quick-match-btn">立即匹配</button>
+        </div>
+
+        <!-- My Stats -->
+        <div class="stats-mini">
+          <div class="stats-mini-title">我的战绩</div>
+          <div class="stats-mini-grid">
+            <div class="stats-mini-item">
+              <div class="stats-mini-val">67</div>
+              <div class="stats-mini-label">总场次</div>
+            </div>
+            <div class="stats-mini-item">
+              <div class="stats-mini-val">58%</div>
+              <div class="stats-mini-label">胜率</div>
+            </div>
+            <div class="stats-mini-item">
+              <div class="stats-mini-val">3</div>
+              <div class="stats-mini-label">连胜中</div>
+            </div>
+            <div class="stats-mini-item">
+              <div class="stats-mini-val">12</div>
+              <div class="stats-mini-label">MVP次数</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Online Players -->
+        <div class="online-card">
+          <div class="online-header">
+            <div class="online-title">在线好友</div>
+            <span class="online-count">5 在线</span>
+          </div>
+          <div class="online-list">
+            <div class="online-user">
+              <div class="online-user-avatar">🐱</div>
+              <div class="online-user-info">
+                <div class="online-user-name">摸鱼小王子</div>
+                <div class="online-user-status">在大厅闲逛中</div>
+              </div>
+              <button class="online-user-invite">邀请</button>
+            </div>
+            <div class="online-user">
+              <div class="online-user-avatar">🐶</div>
+              <div class="online-user-info">
+                <div class="online-user-name">划水一哥</div>
+                <div class="online-user-status">对战中 2:15</div>
+              </div>
+              <button class="online-user-invite">邀请</button>
+            </div>
+            <div class="online-user">
+              <div class="online-user-avatar">🐰</div>
+              <div class="online-user-info">
+                <div class="online-user-name">代码写累了</div>
+                <div class="online-user-status">在大厅闲逛中</div>
+              </div>
+              <button class="online-user-invite">邀请</button>
+            </div>
+            <div class="online-user">
+              <div class="online-user-avatar">🦊</div>
+              <div class="online-user-info">
+                <div class="online-user-name">产品经理别改了</div>
+                <div class="online-user-status">在大厅闲逛中</div>
+              </div>
+              <button class="online-user-invite">邀请</button>
+            </div>
+            <div class="online-user">
+              <div class="online-user-avatar">🐼</div>
+              <div class="online-user-info">
+                <div class="online-user-name">Bug制造机</div>
+                <div class="online-user-status">对战中 8:47</div>
+              </div>
+              <button class="online-user-invite">邀请</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Room Modal -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal">
+      <div class="modal-close" onclick="closeModal()">✕</div>
+      <div class="modal-icon">🏠</div>
+      <h2 class="modal-title">创建房间</h2>
+      <p class="modal-desc">创建一个对战房间，邀请好友一起摸鱼！</p>
+
+      <div class="form-group">
+        <label class="form-label">房间名称</label>
+        <input class="input" type="text" placeholder="例如：午休激战局" maxlength="20">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">游戏模式</label>
+          <select class="input">
+            <option>经典大乱斗</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">AI补位</label>
+          <select class="input">
+            <option>45秒后自动补位</option>
+            <option>不允许AI</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+        <button class="btn btn-primary" onclick="location.href='03-room.html'">创建房间</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('createBtn').addEventListener('click', () => {
+      document.getElementById('createModal').classList.add('show');
+    });
+    function closeModal() {
+      document.getElementById('createModal').classList.remove('show');
+    }
+    document.getElementById('createModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,216 @@
+{
+  "heroId": "vi",
+  "displayName": "蔚",
+  "skills": [
+    {
+      "skillId": "vi_basic_attack",
+      "slot": "basicAttack",
+      "name": "普攻",
+      "tags": ["basic_attack", "target_unit", "physical"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 260,
+        "backswingMs": 160,
+        "range": 3,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 800
+      },
+      "cost": {
+        "resourceType": "none",
+        "amount": 0
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 60,
+            "bonusAdRatio": 1
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "basicAttack",
+        "voiceSlot": "basicAttack"
+      }
+    },
+    {
+      "skillId": "vi_q_vault_breaker",
+      "slot": "q",
+      "name": "破坏冲拳",
+      "tags": ["spell", "directional", "line", "physical"],
+      "cast": {
+        "type": "directional",
+        "castTimeMs": 260,
+        "backswingMs": 120,
+        "range": 8,
+        "width": 1.2,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": true,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 8000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 45
+      },
+      "effects": {
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 90,
+            "bonusAdRatio": 0.8
+          },
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_slow",
+            "durationMs": 1000,
+            "target": "hit_target"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "q",
+        "voiceSlot": "q"
+      }
+    },
+    {
+      "skillId": "vi_w_denting_blows",
+      "slot": "w",
+      "name": "碎裂打击",
+      "tags": ["spell", "self_cast", "buff"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 120,
+        "backswingMs": 80,
+        "allowMoveDuringCast": false,
+        "lockMovement": false,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 12000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 35
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "ApplyBuff",
+            "statusId": "generic_move_speed_up",
+            "durationMs": 2000,
+            "target": "self"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "w",
+        "voiceSlot": "w"
+      }
+    },
+    {
+      "skillId": "vi_e_relentless_force",
+      "slot": "e",
+      "name": "过度驱动",
+      "tags": ["spell", "self_cast", "shield"],
+      "cast": {
+        "type": "self_cast",
+        "castTimeMs": 150,
+        "backswingMs": 90,
+        "allowMoveDuringCast": false,
+        "lockMovement": false,
+        "interruptible": true
+      },
+      "cooldown": {
+        "baseMs": 7000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 40
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Shield",
+            "base": 100,
+            "target": "self"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "e",
+        "voiceSlot": "e"
+      }
+    },
+    {
+      "skillId": "vi_r_assault_and_battery",
+      "slot": "r",
+      "name": "突袭拘捕",
+      "tags": ["spell", "target_unit", "ultimate", "dash", "airborne"],
+      "cast": {
+        "type": "target_unit",
+        "castTimeMs": 120,
+        "backswingMs": 260,
+        "range": 10,
+        "allowMoveDuringCast": false,
+        "lockMovement": true,
+        "interruptible": false,
+        "targetRules": {
+          "enemyOnly": true,
+          "allowSelf": false
+        }
+      },
+      "cooldown": {
+        "baseMs": 70000
+      },
+      "cost": {
+        "resourceType": "mana",
+        "amount": 100
+      },
+      "effects": {
+        "onActivate": [
+          {
+            "type": "Dash",
+            "dashType": "through_target",
+            "distanceOffset": 0,
+            "speed": 26,
+            "target": "hit_target"
+          }
+        ],
+        "onImpact": [
+          {
+            "type": "Damage",
+            "damageType": "physical",
+            "base": 200,
+            "bonusAdRatio": 1
+          },
+          {
+            "type": "Knockup",
+            "durationMs": 800,
+            "statusId": "airborne"
+          }
+        ]
+      },
+      "presentation": {
+        "animationSlot": "r",
+        "voiceSlot": "r"
+      }
+    }
+  ]
+}
