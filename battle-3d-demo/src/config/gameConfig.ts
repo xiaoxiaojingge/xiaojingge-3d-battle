@@ -578,7 +578,7 @@ export const GAME_CONFIG = {
     /** 英雄模型默认标准化高度。 */
     heroTargetHeight: 2.6,
     /** 是否显示性能监控面板（FPS / CPU / GPU / draw calls / 三角形等）。 */
-    showPerfMonitor: true,
+    showPerfMonitor: false,
   },
 
   hud: {
@@ -1096,7 +1096,7 @@ export const GAME_CONFIG = {
       /** 诺手默认资源配置。 */
       darius: createHeroAsset('darius', '诺克萨斯之手', {
         /** 当前启用的模型路径。 */
-        modelPath: createHeroModelUrl('darius', 'https://cdn.xiaojingge.com/3d-battle/models/heroes/yasuo/诺克萨斯之手.glb'),
+        modelPath: createHeroModelUrl('darius', 'https://cdn.xiaojingge.com/3d-battle/models/heroes/darius/诺克萨斯之手.glb'),
         /** 英雄动作与状态映射覆盖配置。 */
         animations: {
           stateAliases: {
